@@ -21,7 +21,7 @@ def sign_up():
     if role == "1" or role == "1, 2": #if this is patient or patient/guardian
         guardian = request.json.get('guardian')
         disease = request.json.get('disease') #value need to be number, example: 1->diabetes
-        new_user = User(name = name, password_hash = password, email = email, ic_number = ic_number, gender = gender, guardian = guardian)   
+        new_user = User(name = name, password = password, email = email, ic_number = ic_number, gender = gender, guardian = guardian)   
         user_disease = UserDisease(disease=disease, user=new_user)
         if new_user.save() and user_disease.save():
             if role == "1":
@@ -71,8 +71,11 @@ def sign_up():
                         "status": "failed"
                     }
         else:
+            error_message = ""
+            for error in new_user.errors:
+                error_message = error_message + error + ", "
             response = {
-                        "message": "Some error occured, please try again",
+                        "message": f"{error_message}",
                         "status": "failed"
             }
     else: # not patient
@@ -98,41 +101,13 @@ def sign_up():
                     "status": "failed"
                 }
         else:
-                response = {
-                    "message": "Some error occured, please try again",
-                    "status": "failed"
-                }                           
+            error_message = ""
+            for error in new_user.errors:
+                error_message = error_message + error + ", "
+            response = {
+                        "message": f"{error_message}",
+                        "status": "failed"
+            }                         
     return jsonify(response)
 
-@users_api_blueprint.route('/update', methods=['POST'])
-@jwt_required
-def update():
-  online_user = get_jwt_identity()
-  user = User.get_or_none(User.id == online_user['id'])
 
-  if user.role == "admin":
-      current_pw = request.form['current_password']
-      hashed_password = user.password_hash
-      pw_match = check_password_hash(hashed_password, current_pw)
-      if pw_match:  
-          user.username = request.json.get('new_username')
-          user.password = request.json.get('new_password')
-          user.email = request.json.get('new_email')
-          user.ic_number = request.json.get('new_ic')
-          user.gender = request.json.get('new_gender')
-          user.guardian = request.json.get('new_guardian')
-          user.disease = request.json.get('new_disease')
-          user.role = request.json.get('new_role')
-
-          if user.save():
-              flash(message)
-              return redirect(url_for('users.show', username=user.username))
-          else:
-              for error in user.errors:
-                  flash(error, "danger")
-              return redirect(url_for('users.edit', id = id))
-      else:
-          flash("Wrong Password!", "danger")
-          return redirect(url_for('users.edit', id = id))
-  else:
-      return "403 Forbidden"
