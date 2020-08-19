@@ -65,6 +65,10 @@ def sign_up():
             else:
                 user_role = UserRole(role=1, user=new_user)
                 if user_role.save():
+                    disease_name_list = []
+                    disease_list = Disease.select().join(UserDisease).where(UserDisease.user_id == new_user.id)
+                    for d in disease_list:
+                        disease_name_list.append(d.disease_name)
                     response = {
                         "message": f"Successfully created a user.",
                         "status": "success",
@@ -75,10 +79,11 @@ def sign_up():
                             "ic_number": new_user.ic_number,
                             "gender": new_user.gender,
                             "role": user_role.role.role_name,
-                            "disease": user_disease.disease.disease_name,
                             "guardian": new_user.guardian
                         }
                     }
+                    for i in range(len(disease_name_list)):
+                        response["user"]["disease"+ str(i+1) ]= disease_name_list[i-1]
                 else:
                     response = {
                         "message": "Some error occured, please try again",
