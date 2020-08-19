@@ -8,4 +8,4 @@ class User(BaseModel):
     password = None
     ic_number = pw.TextField(unique=True, null=False)
     gender = pw.CharField(null=False)
-    guardian = ForeignKeyField('self', null=True, backref='guardian')
+    guardian = pw.ForeignKeyField('self', null=True, backref='guardian')
