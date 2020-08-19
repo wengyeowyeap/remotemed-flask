@@ -4,10 +4,7 @@ from flask import Flask
 from models.base_model import db
 from flask_jwt_extended import JWTManager
 
-web_dir = os.path.join(os.path.dirname(
-    os.path.abspath(__file__)), 'instagram_web')
-
-app = Flask('NEXTAGRAM', root_path=web_dir)
+app = Flask('REMOTEMED')
 jwt = JWTManager(app)
 app.secret_key = os.getenv('SECRET_KEY')
 if os.getenv('FLASK_ENV') == 'production':
