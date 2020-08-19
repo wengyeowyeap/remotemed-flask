@@ -2,6 +2,6 @@ from models.base_model import BaseModel
 import peewee as pw
 from models.disease import Disease
 
-class User-Disease(BaseModel):
+class UserDisease(BaseModel):
   user = pw.ForeignKeyField(User, backref="user", on_delete="CASCADE")
   disease = pw.ForeignKeyField(Disease, backref="disease", on_delete="CASCADE")
