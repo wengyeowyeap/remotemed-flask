@@ -91,13 +91,13 @@ def sign_up():
                     }
                 
         else:
-            error_message = ""
+            error_message = []
             for error in new_user.errors:
-                error_message = error_message + error + ", "
+                error_message.append(error)
             response = {
-                        "message": f"{error_message}",
+                        "message": error_message,
                         "status": "failed"
-            }
+            }   
     else: # not patient
         new_user = User(name = name, password_hash = password, email = email, ic_number = ic_number, gender = gender, guardian = None)
         if new_user.save():   
@@ -121,11 +121,11 @@ def sign_up():
                     "status": "failed"
                 }
         else:
-            error_message = ""
+            error_message = []
             for error in new_user.errors:
-                error_message = error_message + error + ", "
+                error_message.append(error)
             response = {
-                        "message": f"{error_message}",
+                        "message": error_message,
                         "status": "failed"
             }                         
     return jsonify(response)
