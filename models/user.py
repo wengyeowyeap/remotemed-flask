@@ -1,6 +1,7 @@
 from models.base_model import BaseModel
 import peewee as pw
 import re
+from werkzeug.security import generate_password_hash
 
 class User(BaseModel):
     name = pw.CharField(null=False)
@@ -28,6 +29,6 @@ class User(BaseModel):
             else:
                 self.password_hash = generate_password_hash(self.password) # store this in database  
 
-        if self.gender:
-            if self.gender != 'male' or self.gender != 'female':
+        if self.gender != 'male':
+            if self.gender != 'female':
                 self.errors.append("Please input 'male' or 'female'")
