@@ -2,7 +2,7 @@ from models.base_model import BaseModel
 import peewee as pw
 
 class User(BaseModel):
-    name = pw.CharField(unique=True, null=False)
+    name = pw.CharField(null=False)
     email = pw.CharField(unique=True, null=False)
     password_hash = pw.TextField(null=False)
     password = None
