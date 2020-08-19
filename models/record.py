@@ -7,7 +7,7 @@ class Record(BaseModel):
   report = pw.TextField(null=True)
   prescription = pw.TextField(null=True)
   payment_amount = pw.DecimalField()
-  paid = pw.BooleanField(default=false)
+  paid = pw.BooleanField(default=False)
   cholestrol_level = pw.DecimalField()
   sugar_level = pw.DecimalField()
   systolic_blood_pressure = pw.IntegerField()
