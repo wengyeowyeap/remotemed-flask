@@ -99,7 +99,7 @@ def sign_up():
                         "status": "failed"
             }   
     else: # not patient
-        new_user = User(name = name, password_hash = password, email = email, ic_number = ic_number, gender = gender, guardian = None)
+        new_user = User(name = name, password = password, email = email, ic_number = ic_number, gender = gender, guardian = None)
         if new_user.save():   
             user_role = UserRole(role=int(role[0]), user=new_user)     
             if user_role.save():
