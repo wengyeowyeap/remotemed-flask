@@ -10,8 +10,8 @@ users_api_blueprint = Blueprint('users_api',
                              __name__,
                              template_folder='templates')
 
-@users_api_blueprint.route('/sign_up', methods=['POST'])
-def sign_up():
+@users_api_blueprint.route('/create', methods=['POST'])
+def create():
     name = request.json.get('name')
     password = request.json.get('password')
     email = request.json.get('email')
@@ -130,4 +130,6 @@ def sign_up():
             }                         
     return jsonify(response)
 
+@users_api_blueprint.route('/edit', methods=['POST'])
+def edit():
 
