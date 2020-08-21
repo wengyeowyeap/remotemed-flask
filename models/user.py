@@ -16,11 +16,11 @@ class User(BaseModel):
         ic_number_duplicate = User.get_or_none(User.ic_number == self.ic_number)
         email_duplicate = User.get_or_none(User.email == self.email)
 
-        if ic_number_duplicate and email_duplicate:
+        if ic_number_duplicate and email_duplicate and ic_number_duplicate.id != self.id and email_duplicate.id != self.id:
             self.errors.append('Ic_number and email has been used')
-        elif ic_number_duplicate:
+        elif ic_number_duplicate and ic_number_duplicate.id != self.id:
             self.errors.append('Ic_number has been used')
-        elif email_duplicate:
+        elif email_duplicate and email_duplicate.id != self.id:
             self.errors.append('Email has been used')
         
         if self.password:
