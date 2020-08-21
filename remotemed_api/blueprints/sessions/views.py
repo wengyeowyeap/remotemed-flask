@@ -132,8 +132,14 @@ def login():
 
 
         else:
-            return jsonify("Wrong password!")
+            return jsonify({
+                        "message": "Wrong Password, Please try again.",
+                        "status": "failed"
+                    })
     else:
-        return jsonify("No such user!")
+        return jsonify({
+                        "message": "No such user exists.",
+                        "status": "failed"
+                    })
             
     
