@@ -4,14 +4,15 @@ from models.user import User
 from models.user_disease import UserDisease
 from models.user_role import UserRole
 from models.disease import Disease
+from models.role import Role
 from werkzeug.security import check_password_hash
 
 users_api_blueprint = Blueprint('users_api',
                              __name__,
                              template_folder='templates')
 
-@users_api_blueprint.route('/sign_up', methods=['POST'])
-def sign_up():
+@users_api_blueprint.route('/create', methods=['POST'])
+def create():
     name = request.json.get('name')
     password = request.json.get('password')
     email = request.json.get('email')
@@ -50,13 +51,11 @@ def sign_up():
                             "email": new_user.email,
                             "ic_number": new_user.ic_number,
                             "gender": new_user.gender,
-                            "role": user_role.role.role_name,
-                            "role2": user_role2.role.role_name,
+                            "role": [user_role.role.role_name, user_role2.role.role_name],
                             "guardian": new_user.guardian
                         }
                     }
-                    for i in range(len(disease_name_list)):
-                        response["user"]["disease"+ str(i+1) ]= disease_name_list[i-1]
+                    response["user"]["disease"] = disease_name_list
                 else:
                     response = {
                         "message": "Some error occured, please try again",
@@ -82,8 +81,7 @@ def sign_up():
                             "guardian": new_user.guardian
                         }
                     }
-                    for i in range(len(disease_name_list)):
-                        response["user"]["disease"+ str(i+1) ]= disease_name_list[i-1]
+                    response["user"]["disease"] = disease_name_list
                 else:
                     response = {
                         "message": "Some error occured, please try again",
@@ -130,4 +128,64 @@ def sign_up():
             }                         
     return jsonify(response)
 
+@users_api_blueprint.route('/edit', methods=['POST'])
+def edit():
+    ic_number = request.json.get('ic_number')
+    user = User.get_or_none(User.ic_number == ic_number)
+    if user:
+        #change item in User table
+        user.name = request.json.get('name')
+        user.password = request.json.get('password')
+        user.email = request.json.get('email')
+        user.gender = request.json.get('gender')
+        user.guardian = request.json.get('guardian')
 
+        role = request.json.get('role')
+        disease = request.json.get('disease')
+
+        if user.save():
+            role_list = UserRole.select().where(UserRole.user_id == user.id) #select all existing role(s)
+            #Delete obselete role
+            for r in role_list:
+                if r not in role:
+                    del_role = UserRole.get_or_none(UserRole.role_id == r.role_id, UserRole.user_id == user.id)
+                    del_role.delete_instance()
+            #Add new role
+            for i in range(len(role)):
+                if role[i-1] not in role_list:
+                    new_role = UserRole(user = user, role_id = role[i-1])
+                    if new_role.save():
+                        pass
+                    else:
+                        response = {
+                                "message": "Can't add new role, please try again",
+                                "status": "failed"
+                            }
+            if "1" in role:
+                disease_list = UserDisease.select().where(UserDisease.user_id == user.id) #select all existing disease(s)
+                #Add new disease
+                for d in disease_list:
+                    if d not in disease:
+                        del_disease = UserDisease.get_or_none(UserDisease.disease_id == d.disease_id, UserDisease.user_id == user.id)
+                        del_disease.delete_instance()                        
+                #delete obsolete disease
+                for i in range(len(disease)):
+                    if disease[i-1] not in disease_list:
+                        new_disease = UserDisease(user = user, disease_id = disease[i-1])
+                        if new_disease.save():
+                            pass
+                    else:
+                        response = {
+                                "message": "Can't add new disease, please try again",
+                                "status": "failed"
+                            }
+            response = {
+                "message": "Updated user info successfully!",
+                "status": "success"
+            }
+        else:
+            response = {
+                    "message": "Cant save user, please try again",
+                    "status": "failed"
+                }
+    return jsonify(response)
