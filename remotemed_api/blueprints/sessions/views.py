@@ -25,7 +25,7 @@ def login():
             user_role = Role.select().join(UserRole).where(UserRole.user_id==user.id)
             for role in user_role:
                 user_role_list.append(role.id)
-            if 1 and 2 in user_role_list:
+            if (1 in user_role_list) and (2 in user_role_list):
                 role_name_list = []
                 role_list = Role.select().join(UserRole).where(UserRole.user_id == user.id)
                 for role in role_list:
@@ -62,8 +62,44 @@ def login():
                         "guardian": user.guardian
                     }
                 })
-            
-            if 3 or 4 in user_role_list:
+
+            if 1 in user_role_list:
+                role_name_list = []
+                role_list = Role.select().join(UserRole).where(UserRole.user_id == user.id)
+                for role in role_list:
+                    role_name_list.append(role.role_name)
+                diseases_name_list = []
+                diseases_list = Disease.select().join(UserDisease).where(UserDisease.user_id == user.id)
+                for disease in diseases_list:
+                    diseases_name_list.append(disease.disease_name)
+
+                identity = {
+                    "id": user.id,
+                    "name": user.name,
+                    "email": user.email,
+                    "ic_number": user.ic_number,
+                    "gender": user.gender,
+                    "role": role_name_list,
+                    "disease": diseases_name_list
+                }
+
+                token = create_access_token(identity=identity)
+                return jsonify({
+                    "auth_token": token,
+                    "message": "Successfully signed in.",
+                    "status": "success",
+                    "user": {
+                        "id": user.id,
+                        "name": user.name,
+                        "email": user.email,
+                        "ic_number": user.ic_number,
+                        "gender": user.gender,
+                        "role": role_name_list,
+                        "disease": diseases_name_list
+                    }
+                })
+
+            if (2 in user_role_list) or (3 in user_role_list) or (4 in user_role_list):
                 role_name_list = []
                 role_list = Role.select().join(UserRole).where(UserRole.user_id == user.id)
                 for role in role_list:
@@ -93,34 +129,7 @@ def login():
                     }
                 })
             
-            if user_role.role_id == 3 or user_role.role_id == 4:
-                role_name_list = []
-                role_list = Role.select().join(UserRole).where(UserRole.user_id == user.id)
-                for role in role_list:
-                    role_name_list.append(role.role_name)
 
-                identity = {
-                    "id": user.id,
-                    "name": user.name,
-                    "email": user.email,
-                    "ic_number": user.ic_number,
-                    "gender": user.gender,
-                    "role": role_name_list,
-                }
-                token = create_access_token(identity=identity)
-                return jsonify({
-                    "auth_token": token,
-                    "message": "Successfully signed in.",
-                    "status": "success",
-                    "user": {
-                        "id": user.id,
-                        "name": user.name,
-                        "email": user.email,
-                        "ic_number": user.ic_number,
-                        "gender": user.gender,
-                        "role": user_role.role.role_name,       
-                    }
-                })
 
         else:
             return jsonify("Wrong password!")
