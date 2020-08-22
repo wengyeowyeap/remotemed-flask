@@ -189,3 +189,35 @@ def edit():
                     "status": "failed"
                 }
     return jsonify(response)
+
+@users_api_blueprint.route('/check_ic', methods=['GET'])
+def check_ic():
+    input = request.args.get("ic")
+    find_user = User.get_or_none(User.ic_number == input)
+    if find_user:
+        response = {
+            "exists": True,
+            "valid": False
+        }
+    else:
+        response = {
+            "exists": False,
+            "valid": True
+        }
+    return jsonify(response)
+
+@users_api_blueprint.route('/check_email', methods=['GET'])
+def check_email():
+    input = request.args.get("email")
+    find_email = User.get_or_none(User.email == input)
+    if find_email:
+        response = {
+            "exists": True,
+            "valid": False
+        }
+    else:
+        response = {
+            "exists": False,
+            "valid": True
+        }
+    return jsonify(response)
