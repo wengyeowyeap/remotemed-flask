@@ -6,7 +6,7 @@ class Record(BaseModel):
   appointment = pw.ForeignKeyField(Appointment, backref="appointment")
   report = pw.TextField(null=True)
   prescription = pw.TextField(null=True)
-  payment_amount = pw.DecimalField()
+  payment_amount = pw.DecimalField(default=0)
   paid = pw.BooleanField(default=False)
   cholestrol_level = pw.DecimalField()
   sugar_level = pw.DecimalField()
