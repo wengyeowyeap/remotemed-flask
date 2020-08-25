@@ -221,3 +221,83 @@ def check_email():
             "valid": True
         }
     return jsonify(response)
+
+@users_api_blueprint.route('/show_patient', methods=['GET'])
+@jwt_required
+def show_patient():
+    user_ic = request.args.get("ic_number")
+    user = User.get_or_none(User.ic_number == user_ic)
+    role_list = Role.select().join(UserRole).where(UserRole.user_id == user.id) #select all existing role(s)
+    role_name_list = []
+    for r in role_list:
+        role_name_list.append(r.role_name)
+
+    if user:
+        if "patient" in role_name_list:
+            disease_list = Disease.select().join(UserDisease).where(UserDisease.user_id == user.id) #select all existing disease(s)
+            disease_name_list = []
+            for d in disease_list:
+                disease_name_list.append(d.disease_name)
+            response = {
+                "user": {
+                            "id": user.id,
+                            "name": user.name,
+                            "email": user.email,
+                            "ic_number": user.ic_number,
+                            "gender": user.gender,
+                            "role": role_name_list,
+                            "disease": disease_name_list,
+                            "guardian": user.guardian
+                        }
+            }
+        else:
+            response = {
+            "message": "Patient not found",
+            "status": "failed"
+        }
+    else:
+        response = {
+            "message": "Patient not found",
+            "status": "failed"
+        }
+    return jsonify(response)
+
+@users_api_blueprint.route('/me', methods=['GET'])
+@jwt_required
+def me():
+    online_user = get_jwt_identity()
+    user = User.get_or_none(User.id == online_user['id'])
+    role_list = Role.select().join(UserRole).where(UserRole.user_id == user.id) #select all existing role(s)
+    role_name_list = []
+    for r in role_list:
+        role_name_list.append(r.role_name)
+
+    if user:
+        if "patient" in role_name_list:
+            disease_list = Disease.select().join(UserDisease).where(UserDisease.user_id == user.id) #select all existing disease(s)
+            disease_name_list = []
+            for d in disease_list:
+                disease_name_list.append(d.disease_name)
+            response = {
+                "user": {
+                            "id": user.id,
+                            "name": user.name,
+                            "email": user.email,
+                            "ic_number": user.ic_number,
+                            "gender": user.gender,
+                            "role": role_name_list,
+                            "disease": disease_name_list,
+                            "guardian": user.guardian
+                        }
+            }
+        else:
+            response = {
+            "message": "Patient not found",
+            "status": "failed"
+        }
+    else:
+        response = {
+            "message": "Patient not found",
+            "status": "failed"
+        }
+    return jsonify(response)
