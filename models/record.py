@@ -3,7 +3,7 @@ import peewee as pw
 from models.appointment import Appointment
 
 class Record(BaseModel):
-  appointment = pw.ForeignKeyField(Appointment, backref="appointment")
+  appointment = pw.ForeignKeyField(Appointment, unique=True, backref="appointment")
   report = pw.TextField(null=True)
   prescription = pw.TextField(null=True)
   payment_amount = pw.DecimalField(default=0)
