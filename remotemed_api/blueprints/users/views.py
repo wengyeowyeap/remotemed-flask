@@ -12,6 +12,7 @@ users_api_blueprint = Blueprint('users_api',
                              template_folder='templates')
 
 @users_api_blueprint.route('/create', methods=['POST'])
+@jwt_required
 def create():
     name = request.json.get('name')
     password = request.json.get('password')
@@ -129,6 +130,7 @@ def create():
     return jsonify(response)
 
 @users_api_blueprint.route('/edit', methods=['POST'])
+@jwt_required
 def edit():
     ic_number = request.json.get('ic_number')
     user = User.get_or_none(User.ic_number == ic_number)
@@ -222,33 +224,58 @@ def check_email():
         }
     return jsonify(response)
 
+@users_api_blueprint.route('/check_guardian', methods=['GET'])
+def check_guardian():
+    input = request.args.get("guardian_id")
+    #guardian req: role = patient or guardian
+    user = User.get_or_none(User.ic_number == input)
+    if user:
+        role_list = UserRole.select().where(UserRole.user_id == user.id) #select all existing role(s)
+        role_id_list = []
+        for r in role_list:
+            role_id_list.append(r.role_id)
+        if 1 in role_id_list or 2 in role_id_list :
+            response = {
+                "valid": True,
+                "name": user.name
+            }
+        else:
+            response = {
+                "valid": False,
+                "message": "User does not qualify to be a guardian"
+            }
+    else:
+        response = {
+                "valid": False,
+                "message": "User not exist"
+            }
+    return jsonify(response)
+
 @users_api_blueprint.route('/show_patient', methods=['GET'])
 @jwt_required
 def show_patient():
     user_ic = request.args.get("ic_number")
     user = User.get_or_none(User.ic_number == user_ic)
-    role_list = Role.select().join(UserRole).where(UserRole.user_id == user.id) #select all existing role(s)
-    role_name_list = []
-    for r in role_list:
-        role_name_list.append(r.role_name)
 
     if user:
+        role_list = Role.select().join(UserRole).where(UserRole.user_id == user.id) #select all existing role(s)
+        role_name_list = []
+        for r in role_list:
+            role_name_list.append(r.role_name)
         if "patient" in role_name_list:
             disease_list = Disease.select().join(UserDisease).where(UserDisease.user_id == user.id) #select all existing disease(s)
             disease_name_list = []
             for d in disease_list:
                 disease_name_list.append(d.disease_name)
             response = {
-                "user": {
-                            "id": user.id,
-                            "name": user.name,
-                            "email": user.email,
-                            "ic_number": user.ic_number,
-                            "gender": user.gender,
-                            "role": role_name_list,
-                            "disease": disease_name_list,
-                            "guardian": user.guardian
-                        }
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "ic_number": user.ic_number,
+                "gender": user.gender,
+                "role": role_name_list,
+                "disease": disease_name_list,
+                "guardian": user.guardian
             }
         else:
             response = {
