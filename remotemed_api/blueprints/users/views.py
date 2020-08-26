@@ -22,9 +22,9 @@ def create():
     role = request.json.get('role')
 
     if ("1" in role) or ("1" in role and "2" in role) : #if this is patient or patient/guardian
-        guardian = request.json.get('guardian')
+        new_guardian = User.get_or_none(User.ic_number == request.json.get('guardian'))
         disease = request.json.get('disease') #value need to be number, example: 1->diabetes
-        new_user = User(name = name, password = password, email = email, ic_number = ic_number, gender = gender, guardian = guardian)   
+        new_user = User(name = name, password = password, email = email, ic_number = ic_number, gender = gender, guardian = new_guardian.id)   
         if new_user.save():
             for i in range(len(disease)):
                 user_disease = UserDisease(disease=int(disease[i-1]), user=new_user)
@@ -140,7 +140,8 @@ def edit():
         user.password = request.json.get('password')
         user.email = request.json.get('email')
         user.gender = request.json.get('gender')
-        user.guardian = request.json.get('guardian')
+        new_guardian = User.get_or_none(User.ic_number == request.json.get('guardian'))
+        user.guardian = new_guardian.id
 
         role = request.json.get('role')
         disease = request.json.get('disease')
