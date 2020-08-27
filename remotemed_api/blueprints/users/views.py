@@ -237,6 +237,33 @@ def check_email():
         }
     return jsonify(response)
 
+@users_api_blueprint.route('/check_guardian', methods=['GET'])
+def check_guardian():
+    input = request.args.get("guardian_id")
+    #guardian req: role = patient or guardian
+    user = User.get_or_none(User.ic_number == input)
+    if user:
+        role_list = UserRole.select().where(UserRole.user_id == user.id) #select all existing role(s)
+        role_id_list = []
+        for r in role_list:
+            role_id_list.append(r.role_id)
+        if 1 in role_id_list or 2 in role_id_list :
+            response = {
+                "valid": True,
+                "name": user.name
+            }
+        else:
+            response = {
+                "valid": False,
+                "message": "User does not qualify to be a guardian"
+            }
+    else:
+        response = {
+                "valid": False,
+                "message": "User not exist"
+            }
+    return jsonify(response)
+
 @users_api_blueprint.route('/show_patient', methods=['GET'])
 @jwt_required
 def show_patient():
