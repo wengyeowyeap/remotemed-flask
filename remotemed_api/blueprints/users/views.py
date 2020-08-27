@@ -254,7 +254,6 @@ def show_patient():
             for d in disease_list:
                 disease_name_list.append(d.disease_name)
             response = {
-                "user": {
                             "id": user.id,
                             "name": user.name,
                             "email": user.email,
@@ -264,7 +263,7 @@ def show_patient():
                             "disease": disease_name_list,
                             "guardian": user.guardian
                         }
-            }
+        
         else:
             response = {
             "message": "Patient not found",
