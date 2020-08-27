@@ -443,8 +443,9 @@ def me():
 def search():
     id = request.json.get("record_id")
     record = Record.get_or_none(Record.id==id)
-    appointment = Appointment.get_or_none(Appointment.id==record.appointment_id)
+    
     if record:
+        appointment = Appointment.get_or_none(Appointment.id==record.appointment_id)
         return jsonify({
             "record_id": record.id,
             "appointment_id": record.appointment_id,
@@ -461,7 +462,7 @@ def search():
         })
     else:
         return jsonify({
-            "message": "There is no such appointment.",
+            "message": "There is no such record.",
             "status": "failed"
             })
 
