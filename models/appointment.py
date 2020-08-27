@@ -22,29 +22,52 @@ class Appointment(BaseModel):
     
     current_datetime = datetime.datetime.now()
     
-    existing_doctor_appointments = Appointment.select().where(Appointment.doctor_id==self.doctor)
-    for a in existing_doctor_appointments:
-      starttime = datetime.datetime.strptime(self.start_datetime, '%Y-%m-%d %H:%M:%S')
-      endtime = datetime.datetime.strptime(self.end_datetime, '%Y-%m-%d %H:%M:%S')
-      if starttime > a.start_datetime and starttime < a.end_datetime and a.doctor_id != self.doctor_id:
-        self.errors.append("This doctor already has an appointment that crashed the time you've entered.")
-      elif endtime > a.start_datetime and endtime < a.end_datetime and a.doctor_id != self.doctor_id:
-        self.errors.append("This doctor already has an appointment that crashed the time you've entered.")
-      elif a.start_datetime > starttime and a.end_datetime < endtime and a.doctor_id != self.doctor_id:
-        self.errors.append("This doctor already has an appointment that crashed the time you've entered.")
+    if self.id:
+      existing_doctor_appointments = Appointment.select().where(Appointment.doctor_id==self.doctor)
+      for a in existing_doctor_appointments:
+        starttime = datetime.datetime.strptime(self.start_datetime, '%Y-%m-%d %H:%M:%S')
+        endtime = datetime.datetime.strptime(self.end_datetime, '%Y-%m-%d %H:%M:%S')
+        if starttime > a.start_datetime and starttime < a.end_datetime and a.doctor_id != self.doctor_id:
+          self.errors.append("This doctor already has an appointment that crashed the time you've entered.")
+        elif endtime > a.start_datetime and endtime < a.end_datetime and a.doctor_id != self.doctor_id:
+          self.errors.append("This doctor already has an appointment that crashed the time you've entered.")
+        elif a.start_datetime > starttime and a.end_datetime < endtime and a.doctor_id != self.doctor_id:
+          self.errors.append("This doctor already has an appointment that crashed the time you've entered.")
     
-    existing_patient_appointments = Appointment.select().where(Appointment.patient_id==self.patient)
-    for a in existing_patient_appointments:
-      starttime = datetime.datetime.strptime(self.start_datetime, '%Y-%m-%d %H:%M:%S')
-      endtime = datetime.datetime.strptime(self.end_datetime, '%Y-%m-%d %H:%M:%S')
-      if starttime > a.start_datetime and starttime < a.end_datetime and a.patient_id != self.patient_id:
-        self.errors.append("This patient already has an appointment that crashed the time you've entered.")
-      elif endtime > a.start_datetime and endtime < a.end_datetime and a.patient_id != self.patient_id:
-        self.errors.append("This patient already has an appointment that crashed the time you've entered.")
-      elif a.start_datetime > starttime and a.end_datetime < endtime and a.patient_id != self.patient_id:
-        self.errors.append("This patient already has an appointment that crashed the time you've entered.")
+      existing_patient_appointments = Appointment.select().where(Appointment.patient_id==self.patient)
+      for a in existing_patient_appointments:
+        starttime = datetime.datetime.strptime(self.start_datetime, '%Y-%m-%d %H:%M:%S')
+        endtime = datetime.datetime.strptime(self.end_datetime, '%Y-%m-%d %H:%M:%S')
+        if starttime > a.start_datetime and starttime < a.end_datetime and a.patient_id != self.patient_id:
+          self.errors.append("This patient already has an appointment that crashed the time you've entered.")
+        elif endtime > a.start_datetime and endtime < a.end_datetime and a.patient_id != self.patient_id:
+          self.errors.append("This patient already has an appointment that crashed the time you've entered.")
+        elif a.start_datetime > starttime and a.end_datetime < endtime and a.patient_id != self.patient_id:
+          self.errors.append("This patient already has an appointment that crashed the time you've entered.")
 
-    
+    else:
+        existing_doctor_appointments = Appointment.select().where(Appointment.doctor_id==self.doctor)
+        for a in existing_doctor_appointments:
+          starttime = datetime.datetime.strptime(self.start_datetime, '%Y-%m-%d %H:%M:%S')
+          endtime = datetime.datetime.strptime(self.end_datetime, '%Y-%m-%d %H:%M:%S')
+          if starttime > a.start_datetime and starttime < a.end_datetime:
+            self.errors.append("This doctor already has an appointment that crashed the time you've entered.")
+          elif endtime > a.start_datetime and endtime < a.end_datetime:
+            self.errors.append("This doctor already has an appointment that crashed the time you've entered.")
+          elif a.start_datetime > starttime and a.end_datetime < endtime:
+            self.errors.append("This doctor already has an appointment that crashed the time you've entered.")
+      
+        existing_patient_appointments = Appointment.select().where(Appointment.patient_id==self.patient)
+        for a in existing_patient_appointments:
+          starttime = datetime.datetime.strptime(self.start_datetime, '%Y-%m-%d %H:%M:%S')
+          endtime = datetime.datetime.strptime(self.end_datetime, '%Y-%m-%d %H:%M:%S')
+          if starttime > a.start_datetime and starttime < a.end_datetime:
+            self.errors.append("This patient already has an appointment that crashed the time you've entered.")
+          elif endtime > a.start_datetime and endtime < a.end_datetime:
+            self.errors.append("This patient already has an appointment that crashed the time you've entered.")
+          elif a.start_datetime > starttime and a.end_datetime < endtime:
+            self.errors.append("This patient already has an appointment that crashed the time you've entered.")
+
     duplicate_time = Appointment.get_or_none(Appointment.start_datetime==self.start_datetime, Appointment.end_datetime==self.end_datetime, Appointment.patient_id==self.patient, Appointment.doctor_id==self.doctor)
     if duplicate_time and duplicate_time.id != self.id:
       self.errors.append("duplicate record!")

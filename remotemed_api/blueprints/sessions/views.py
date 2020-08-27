@@ -34,6 +34,10 @@ def login():
                 diseases_list = Disease.select().join(UserDisease).where(UserDisease.user_id == user.id)
                 for disease in diseases_list:
                     diseases_name_list.append(disease.disease_name)
+                if user.guardian_id != None:
+                    guardian = user.guardian_id
+                else:
+                    guardian = None
 
                 identity = {
                     "id": user.id,
@@ -43,7 +47,7 @@ def login():
                     "gender": user.gender,
                     "role": role_name_list,
                     "disease": diseases_name_list,
-                    "guardian": user.guardian
+                    "guardian": guardian
                 }
 
                 token = create_access_token(identity=identity)
@@ -59,7 +63,7 @@ def login():
                         "gender": user.gender,
                         "role": role_name_list,
                         "disease": diseases_name_list,
-                        "guardian": user.guardian
+                        "guardian": guardian
                     }
                 })
 
