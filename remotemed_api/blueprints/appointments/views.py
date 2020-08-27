@@ -12,6 +12,7 @@ appointments_api_blueprint = Blueprint('appointments_api',
 
 
 @appointments_api_blueprint.route('/create', methods=['POST'])
+@jwt_required
 def create():
     params = request.json
     doctor_id = params.get("doctor_id")
@@ -115,10 +116,7 @@ def me():
                     return jsonify({
                     "message": "This doctor has no upcoming appointment.",
                     "status": "success"
-                }) 
-
-            
-        
+                })   
         elif "patient" in user["role"]:
             current_date_time = datetime.datetime.now()
             appointments = Appointment.select().where(Appointment.patient_id==user["id"])
@@ -224,7 +222,7 @@ def show():
         else:
             return jsonify({
                 "message": "There is no appointment.",
-                "status": "failed"
+                "status": "success"
             })
     else:
         return jsonify({
@@ -233,8 +231,9 @@ def show():
             })
             
 
-@appointments_api_blueprint.route('/edit/<id>', methods=['POST'])
-def edit(id):
+@appointments_api_blueprint.route('/edit', methods=['POST'])
+def edit():
+    id = request.json.get("appointment_id")
     appointment = Appointment.get_or_none(Appointment.id==id)
     if appointment:
         params = request.json
@@ -268,17 +267,24 @@ def edit(id):
             "status": "failed"
         })
 
-@appointments_api_blueprint.route('/delete/<id>', methods=['POST'])
-def destroy(id):
+@appointments_api_blueprint.route('/delete', methods=['POST'])
+def destroy():
+    id = request.json.get("appointment_id")
     appointment = Appointment.get_or_none(Appointment.id==id)
-    if appointment.delete_instance():
-        return jsonify({
-            "message": "Successfully deleted appointment.",
-            "status": "success"
-        })
+    if appointment:
+        if appointment.delete_instance():
+            return jsonify({
+                "message": "Successfully deleted appointment.",
+                "status": "success"
+            })
+        else:
+            return jsonify({
+                "message": "Couldn't delete appointment.",
+                "status": "failed"
+            })
     else:
         return jsonify({
-            "message": "Couldn't delete appointment.",
+            "message": "No such appointment exists.",
             "status": "failed"
         })
 
