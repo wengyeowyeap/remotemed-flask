@@ -53,7 +53,7 @@ def create():
                             "ic_number": new_user.ic_number,
                             "gender": new_user.gender,
                             "role": [user_role.role.role_name, user_role2.role.role_name],
-                            "guardian": new_user.guardian
+                            "guardian": new_user.guardian.id
                         }
                     }
                     response["user"]["disease"] = disease_name_list
@@ -79,7 +79,7 @@ def create():
                             "ic_number": new_user.ic_number,
                             "gender": new_user.gender,
                             "role": user_role.role.role_name,
-                            "guardian": new_user.guardian
+                            "guardian": new_user.guardian.id
                         }
                     }
                     response["user"]["disease"] = disease_name_list
@@ -99,7 +99,7 @@ def create():
             }   
     else: # not patient
         new_user = User(name = name, password = password, email = email, ic_number = ic_number, gender = gender, guardian = None)
-        if new_user.save():   
+        if new_user.save():  
             user_role = UserRole(role=int(role[0]), user=new_user)     
             if user_role.save():
                 response = {
@@ -134,60 +134,72 @@ def create():
 def edit():
     ic_number = request.json.get('ic_number')
     user = User.get_or_none(User.ic_number == ic_number)
+    online_user = get_jwt_identity()
     if user:
         #change item in User table
         user.name = request.json.get('name')
         user.password = request.json.get('password')
         user.email = request.json.get('email')
         user.gender = request.json.get('gender')
-        new_guardian = User.get_or_none(User.ic_number == request.json.get('guardian'))
-        user.guardian = new_guardian.id
+        user.guardian = request.json.get('guardian')
 
         role = request.json.get('role')
         disease = request.json.get('disease')
 
         if user.save():
-            role_list = UserRole.select().where(UserRole.user_id == user.id) #select all existing role(s)
-            #Delete obselete role
-            for r in role_list:
-                if r not in role:
-                    del_role = UserRole.get_or_none(UserRole.role_id == r.role_id, UserRole.user_id == user.id)
-                    del_role.delete_instance()
-            #Add new role
-            for i in range(len(role)):
-                if role[i-1] not in role_list:
-                    new_role = UserRole(user = user, role_id = role[i-1])
-                    if new_role.save():
-                        pass
-                    else:
-                        response = {
-                                "message": "Can't add new role, please try again",
-                                "status": "failed"
-                            }
-            if "1" in role:
-                disease_list = UserDisease.select().where(UserDisease.user_id == user.id) #select all existing disease(s)
-                #Add new disease
-                for d in disease_list:
-                    if d not in disease:
-                        del_disease = UserDisease.get_or_none(UserDisease.disease_id == d.disease_id, UserDisease.user_id == user.id)
-                        del_disease.delete_instance()                        
-                #delete obsolete disease
-                for i in range(len(disease)):
-                    if disease[i-1] not in disease_list:
-                        new_disease = UserDisease(user = user, disease_id = disease[i-1])
-                        if new_disease.save():
+            if user.id != online_user['id']:
+                
+                role_list = UserRole.select().where(UserRole.user_id == user.id) #select all existing role(s)
+                #Delete obselete role
+                for r in role_list:
+                    if r not in role:
+                        del_role = UserRole.get_or_none(UserRole.role_id == r.role_id, UserRole.user_id == user.id)
+                        del_role.delete_instance()
+                #Add new role
+                for i in range(len(role)):
+                    if role[i-1] not in role_list:
+                        new_role = UserRole(user = user, role_id = role[i-1])
+                        if new_role.save():
                             pass
-                    else:
-                        response = {
-                                "message": "Can't add new disease, please try again",
-                                "status": "failed"
-                            }
-            response = {
-                "message": "Updated user info successfully!",
-                "status": "success"
-            }
+                        else:
+                            response = {
+                                    "message": "Can't add new role, please try again",
+                                    "status": "failed"
+                                }
+                if "1" in role:
+                    disease_list = UserDisease.select().where(UserDisease.user_id == user.id) #select all existing disease(s)
+                    #Add new disease
+                    for d in disease_list:
+                        if d not in disease:
+                            del_disease = UserDisease.get_or_none(UserDisease.disease_id == d.disease_id, UserDisease.user_id == user.id)
+                            del_disease.delete_instance()                        
+                    #delete obsolete disease
+                    for i in range(len(disease)):
+                        if disease[i-1] not in disease_list:
+                            new_disease = UserDisease(user = user, disease_id = disease[i-1])
+                            if new_disease.save():
+                                pass
+                        else:
+                            response = {
+                                    "message": "Can't add new disease, please try again",
+                                    "status": "failed"
+                                }
+                response = {
+                    "message": "Updated user info successfully!",
+                    "status": "success"
+                }
+            else:
+                response = {
+                    "message": "Updated user info successfully!",
+                    "status": "success"
+                }
         else:
             response = {
+                    "message": "Cant save user, please try again",
+                    "status": "failed"
+                }
+    else:
+        response = {
                     "message": "Cant save user, please try again",
                     "status": "failed"
                 }
@@ -225,58 +237,33 @@ def check_email():
         }
     return jsonify(response)
 
-@users_api_blueprint.route('/check_guardian', methods=['GET'])
-def check_guardian():
-    input = request.args.get("guardian_id")
-    #guardian req: role = patient or guardian
-    user = User.get_or_none(User.ic_number == input)
-    if user:
-        role_list = UserRole.select().where(UserRole.user_id == user.id) #select all existing role(s)
-        role_id_list = []
-        for r in role_list:
-            role_id_list.append(r.role_id)
-        if 1 in role_id_list or 2 in role_id_list :
-            response = {
-                "valid": True,
-                "name": user.name
-            }
-        else:
-            response = {
-                "valid": False,
-                "message": "User does not qualify to be a guardian"
-            }
-    else:
-        response = {
-                "valid": False,
-                "message": "User not exist"
-            }
-    return jsonify(response)
-
 @users_api_blueprint.route('/show_patient', methods=['GET'])
 @jwt_required
 def show_patient():
     user_ic = request.args.get("ic_number")
     user = User.get_or_none(User.ic_number == user_ic)
+    role_list = Role.select().join(UserRole).where(UserRole.user_id == user.id) #select all existing role(s)
+    role_name_list = []
+    for r in role_list:
+        role_name_list.append(r.role_name)
 
     if user:
-        role_list = Role.select().join(UserRole).where(UserRole.user_id == user.id) #select all existing role(s)
-        role_name_list = []
-        for r in role_list:
-            role_name_list.append(r.role_name)
         if "patient" in role_name_list:
             disease_list = Disease.select().join(UserDisease).where(UserDisease.user_id == user.id) #select all existing disease(s)
             disease_name_list = []
             for d in disease_list:
                 disease_name_list.append(d.disease_name)
             response = {
-                "id": user.id,
-                "name": user.name,
-                "email": user.email,
-                "ic_number": user.ic_number,
-                "gender": user.gender,
-                "role": role_name_list,
-                "disease": disease_name_list,
-                "guardian": user.guardian
+                "user": {
+                            "id": user.id,
+                            "name": user.name,
+                            "email": user.email,
+                            "ic_number": user.ic_number,
+                            "gender": user.gender,
+                            "role": role_name_list,
+                            "disease": disease_name_list,
+                            "guardian": user.guardian
+                        }
             }
         else:
             response = {

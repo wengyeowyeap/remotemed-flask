@@ -10,7 +10,7 @@ class User(BaseModel):
     password = None
     ic_number = pw.TextField(unique=True, null=False)
     gender = pw.CharField(null=False)
-    guardian = pw.ForeignKeyField('self', null=True, backref='guardian')
+    guardian = pw.ForeignKeyField('self', null=True)
 
     def validate(self):
         ic_number_duplicate = User.get_or_none(User.ic_number == self.ic_number)

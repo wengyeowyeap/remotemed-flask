@@ -438,6 +438,33 @@ def me():
         }
     return jsonify(response)
 
+@records_api_blueprint.route('/', methods=['GET'])
+@jwt_required
+def search():
+    id = request.json.get("record_id")
+    record = Record.get_or_none(Record.id==id)
+    appointment = Appointment.get_or_none(Appointment.id==record.appointment_id)
+    if record:
+        return jsonify({
+            "record_id": record.id,
+            "appointment_id": record.appointment_id,
+            "report": record.report,
+            "prescription": record.prescription,
+            "payment_amount": str(record.payment_amount),
+            "paid": record.paid,
+            "cholestrol_level": str(record.cholestrol_level),
+            "sugar_level": str(record.sugar_level),
+            "systolic_blood_pressure": record.systolic_blood_pressure,
+            "diastolic_blood_pressure": record.diastolic_blood_pressure,
+            "doctor_id" : appointment.doctor_id,
+            "patient_id" : appointment.patient_id  
+        })
+    else:
+        return jsonify({
+            "message": "There is no such appointment.",
+            "status": "failed"
+            })
+
 @records_api_blueprint.route('/update', methods=['POST'])
 @jwt_required
 def update():
