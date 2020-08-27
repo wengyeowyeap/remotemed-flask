@@ -140,7 +140,7 @@ def me():
                 return jsonify(response)
             else:
                 return jsonify({
-                    "message": "This doctor has no upcoming appointment.",
+                    "message": "This patient has no upcoming appointment.",
                     "status": "success"
                 }) 
         
