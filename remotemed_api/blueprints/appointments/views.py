@@ -229,7 +229,25 @@ def show():
             "message": "There is no such user.",
             "status": "failed"
             })
-            
+
+@appointments_api_blueprint.route('/', methods=['GET'])
+@jwt_required
+def search():
+    id = request.json.get("appointment_id")
+    appointment = Appointment.get_or_none(Appointment.id==id)
+    if appointment:
+        return jsonify({
+            "appointment_id": appointment.id,
+            "doctor_id": appointment.doctor_id,
+            "patient_id": appointment.patient_id,
+            "appointment_time": appointment.start_datetime
+        })
+    else:
+        return jsonify({
+            "message": "There is no such appointment.",
+            "status": "failed"
+            })
+         
 
 @appointments_api_blueprint.route('/edit', methods=['POST'])
 def edit():
