@@ -15,20 +15,23 @@ appointments_api_blueprint = Blueprint('appointments_api',
 @jwt_required
 def create():
     params = request.json
-    doctor_id = params.get("doctor_id")
-    patient_id = params.get("patient_id")
+    doctor_ic = params.get("doctor_ic")
+    patient_ic = params.get("patient_ic")
     start_datetime = params.get("start_datetime")
     end_datetime = params.get("end_datetime")
+
+    doctor = User.get_or_none(User.ic_number==doctor_ic)
+    patient = User.get_or_none(User.ic_number==patient_ic)
     
-    new_appointment = Appointment(doctor_id=doctor_id, patient_id=patient_id, start_datetime=start_datetime, end_datetime=end_datetime)
+    new_appointment = Appointment(doctor_id=doctor.id, patient_id=patient.id, start_datetime=start_datetime, end_datetime=end_datetime)
     if new_appointment.save():
         return jsonify({
             "message": "Successfully created an appointment",
             "status ": "success",
-            "doctor_id": doctor_id,
-            "patient_id": patient_id,
-            "start_datetime": start_datetime,
-            "end_datetime": end_datetime
+            "doctor_id": new_appointment.doctor_id,
+            "patient_id": new_appointment.patient_id,
+            "start_datetime": new_appointment.start_datetime,
+            "end_datetime": new_appointment.end_datetime
         })
     else:
         error_msg = []

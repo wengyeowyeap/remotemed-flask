@@ -141,7 +141,10 @@ def edit():
         user.password = request.json.get('password')
         user.email = request.json.get('email')
         user.gender = request.json.get('gender')
-        user.guardian = request.json.get('guardian')
+
+        new_guardian = User.get_or_none(User.ic_number == request.json.get('guardian'))
+        user.guardian = new_guardian.id
+
 
         role = request.json.get('role')
         disease = request.json.get('disease')
