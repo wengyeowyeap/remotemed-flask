@@ -19,7 +19,7 @@ records_api_blueprint = Blueprint('records_api',
 @records_api_blueprint.route('/create', methods=['POST'])
 @jwt_required
 def create():
-    appointment_id = request.json.get("appointment_id")
+    appointment_id = request.form.get("appointment_id")
     cholestrol_level = request.form.get("cholestrol_level")
     sugar_level = request.form.get("sugar_level")
     systolic_blood_pressure = request.form.get("systolic_blood_pressure")
