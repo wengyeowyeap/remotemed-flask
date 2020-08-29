@@ -188,7 +188,7 @@ def me():
 @appointments_api_blueprint.route('/show', methods=['GET'])
 @jwt_required
 def show():
-    ic_number = request.json.get("ic_number")
+    ic_number = request.args.get("ic_number")
     verified_user = User.get_or_none(User.ic_number==ic_number)
     current_date_time = datetime.datetime.now()
     if verified_user:
@@ -236,7 +236,7 @@ def show():
 @appointments_api_blueprint.route('/', methods=['GET'])
 @jwt_required
 def search():
-    id = request.json.get("appointment_id")
+    id = request.args.get("appointment_id")
     appointment = Appointment.get_or_none(Appointment.id==id)
     if appointment:
         return jsonify({
@@ -308,5 +308,3 @@ def destroy():
             "message": "No such appointment exists.",
             "status": "failed"
         })
-
-
