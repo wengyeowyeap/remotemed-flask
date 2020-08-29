@@ -233,7 +233,7 @@ def show():
             "status": "failed"
             })
 
-@appointments_api_blueprint.route('/', methods=['GET'])
+@appointments_api_blueprint.route('/search', methods=['GET'])
 @jwt_required
 def search():
     id = request.args.get("appointment_id")
@@ -308,3 +308,70 @@ def destroy():
             "message": "No such appointment exists.",
             "status": "failed"
         })
+@appointments_api_blueprint.route('/create_room', methods=['POST'])
+@jwt_required
+def create_room():
+    from twilio.rest import Client
+    from app import app
+    appointment_id = request.json.get('appointment_id')
+    account_sid = app.config.get('TWILIO_SID')
+    auth_token = app.config.get('TWILIO_AUTHTOKEN')
+    client = Client(account_sid, auth_token)
+
+    #create peer to peer room ==> https://www.twilio.com/docs/video/api/rooms-resource#post-list-resource
+    room = client.video.rooms.create(
+                                enable_turn=True,
+                                status_callback='http://127.0.0.1:5000/api/v1/appointments/roomevent',
+                                type='peer-to-peer',
+                                unique_name=f'RemoteMed 1'
+                            )
+    response={
+        "room_sid": room.sid,
+        "message": "created room",
+
+    }
+    return jsonify(response)
+    
+@appointments_api_blueprint.route('/create_access', methods=['POST'])
+def create_access():
+    from twilio.jwt.access_token import AccessToken
+    from twilio.jwt.access_token.grants import VideoGrant
+    from app import app
+    # Required for all Twilio Access Tokens
+    account_sid = app.config.get('TWILIO_SID')
+    api_key = app.config.get('TWILIO_API_KEY')
+    api_secret = app.config.get('TWILIO_API_SECRET')
+
+    # required for Video grant
+    appointment_id = request.json.get('appointment_id')
+    identity = "John"
+
+    # Create Access Token with credentials
+    token = AccessToken(account_sid, api_key, api_secret, identity=identity)
+
+    # Create a Video grant and add to token
+    online_user = get_jwt_identity()
+    user = User.get_or_none(User.id == online_user['id'])
+    video_grant = VideoGrant(room=f'remotemed appointment: ID 1')
+    token.add_grant(video_grant)
+
+    # Return token info as JSON
+    print(token.to_jwt())
+
+    response = {
+        "message": "successfully created token",
+        "access_token": token
+    }
+    return jsonify(response)
+
+@appointments_api_blueprint.route('/roomevent', methods=['POST'])
+def roomevent():
+    status = request.json.get('StatusCallbackEvent')
+    timestamp = request.json.get('Timestamp')
+
+    response = {
+        "status": status,
+        "timestamp": timestamp 
+    }
+    print(response)
+    return jsonify(response)

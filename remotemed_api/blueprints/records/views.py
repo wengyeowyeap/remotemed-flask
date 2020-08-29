@@ -438,7 +438,7 @@ def me():
         }
     return jsonify(response)
 
-@records_api_blueprint.route('/', methods=['GET'])
+@records_api_blueprint.route('/search', methods=['GET'])
 @jwt_required
 def search():
     id = request.args.get("record_id")
