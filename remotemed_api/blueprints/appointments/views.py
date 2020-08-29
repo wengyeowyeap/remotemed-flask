@@ -243,7 +243,7 @@ def search():
             "appointment_id": appointment.id,
             "doctor_id": appointment.doctor_id,
             "patient_id": appointment.patient_id,
-            "appointment_start": appointment.start_datetime
+            "appointment_start": appointment.start_datetime,
             "appointment_end": appointment.end_datetime
         })
     else:
