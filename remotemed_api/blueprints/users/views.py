@@ -341,11 +341,7 @@ def show_patient():
                             "gender": user.gender,
                             "role": role_name_list,
                             "disease": disease_name_list,
-<<<<<<< HEAD
-                            "guardian": user.guardian_id
-=======
                             "guardian": user.guardian.name
->>>>>>> 17fb39126366f1f6c77355bd6766ed38ab1bc93d
                         }
         
         else:
