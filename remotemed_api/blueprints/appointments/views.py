@@ -66,7 +66,8 @@ def me():
                         "appointment_id": a.id,
                         "doctor_id": a.doctor_id,
                         "patient_id": a.patient_id,
-                        "appointment_time": a.start_datetime
+                        "start_time": a.start_datetime,
+                        "end_time": a.end_datetime
                         })
                 response["doctor_records"] = doctor_records
                 return jsonify(response)
@@ -102,7 +103,8 @@ def me():
                                 "appointment_id": a.id,
                                 "doctor_id": a.doctor_id,
                                 "patient_id": a.patient_id,
-                                "appointment_time": a.start_datetime
+                                "start_time": a.start_datetime,
+                                "end_time": a.end_datetime,
                             })
                             else:
                                 response["message"] = "Successfully retrieve appointment!"
@@ -110,7 +112,8 @@ def me():
                                 "appointment_id": a.id,
                                 "doctor_id": a.doctor_id,
                                 "patient_id": a.patient_id,
-                                "appointment_time": a.start_datetime
+                                "start_time": a.start_datetime,
+                                "end_time": a.end_datetime,
                             })
                     response["patient_records"] = patient_records
                     response["guardian_record"] = guardian_record
@@ -137,7 +140,8 @@ def me():
                         "appointment_id": a.id,
                         "doctor_id": a.doctor_id,
                         "patient_id": a.patient_id,
-                        "appointment_time": a.start_datetime
+                        "start_time": a.start_datetime,
+                        "end_time": a.end_datetime
                     })
                 response["patient_record"] = patient_record
                 return jsonify(response)
@@ -169,7 +173,8 @@ def me():
                             "appointment_id": a.id,
                             "doctor_id": a.doctor_id,
                             "patient_id": a.patient_id,
-                            "appointment_time": a.start_datetime
+                            "start_time": a.start_datetime,
+                            "end_time": a.end_datetime
                             })
                         
                     response["patient's record"] = records
@@ -207,7 +212,8 @@ def show():
                     "appointment_id": a.id,
                     "doctor_id": a.doctor_id,
                     "patient_id": a.patient_id,
-                    "appointment_time": a.start_datetime
+                    "start_time": a.start_datetime,
+                    "end_time": a.end_datetime,
                 })
                 
                 if enddatetime > current_date_time:
@@ -216,7 +222,8 @@ def show():
                     "appointment_id": a.id,
                     "doctor_id": a.doctor_id,
                     "patient_id": a.patient_id,
-                    "appointment_time": a.start_datetime
+                    "start_time": a.start_datetime,
+                    "end_time": a.end_datetime
                     })
             
             response["all_list"] = all_list
