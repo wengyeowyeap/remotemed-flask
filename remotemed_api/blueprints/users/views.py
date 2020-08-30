@@ -267,17 +267,67 @@ def check_guardian():
             }
     return jsonify(response)
 
+@users_api_blueprint.route('/check_doctor', methods=['GET'])
+def check_doctor():
+    input = request.args.get("doctor_ic")
+    doctor = User.get_or_none(User.ic_number == input)
+    if doctor:
+        role_list = UserRole.select().where(UserRole.user_id == doctor.id)
+        role_id_list = []
+        for r in role_list:
+            role_id_list.append(r.role_id)
+        if 3 in role_id_list:
+            response = {
+                "is_doctor": True,
+                "name": doctor.name
+            }
+        else:
+            response = {
+                "is_doctor": False
+            }
+    else:
+        response = {
+            "valid": False,
+            "message": "User not exist"
+        }
+    return jsonify(response)
+
+@users_api_blueprint.route('/check_patient', methods=['GET'])
+def check_patient():
+    input = request.args.get("patient_ic")
+    patient = User.get_or_none(User.ic_number == input)
+    if patient:
+        role_list = UserRole.select().where(UserRole.user_id == patient.id)
+        role_id_list = []
+        for r in role_list:
+            role_id_list.append(r.role_id)
+        if 1 in role_id_list:
+            response = {
+                "is_patient": True,
+                "name": patient.name
+            }
+        else:
+            response = {
+                "is_patient": False
+            }
+    else:
+        response = {
+            "valid": False,
+            "message": "User not exist"
+        }
+    return jsonify(response)
+
 @users_api_blueprint.route('/show_patient', methods=['GET'])
 @jwt_required
 def show_patient():
     user_ic = request.args.get("ic_number")
     user = User.get_or_none(User.ic_number == user_ic)
-    role_list = Role.select().join(UserRole).where(UserRole.user_id == user.id) #select all existing role(s)
-    role_name_list = []
-    for r in role_list:
-        role_name_list.append(r.role_name)
 
     if user:
+        role_list = Role.select().join(UserRole).where(UserRole.user_id == user.id) #select all existing role(s)
+        role_name_list = []
+        for r in role_list:
+            role_name_list.append(r.role_name)
         if "patient" in role_name_list:
             disease_list = Disease.select().join(UserDisease).where(UserDisease.user_id == user.id) #select all existing disease(s)
             disease_name_list = []
@@ -291,7 +341,11 @@ def show_patient():
                             "gender": user.gender,
                             "role": role_name_list,
                             "disease": disease_name_list,
+<<<<<<< HEAD
                             "guardian": user.guardian_id
+=======
+                            "guardian": user.guardian.name
+>>>>>>> 17fb39126366f1f6c77355bd6766ed38ab1bc93d
                         }
         
         else:
@@ -303,6 +357,61 @@ def show_patient():
         response = {
             "message": "Patient not found",
             "status": "failed"
+        }
+    return jsonify(response)
+
+@users_api_blueprint.route('/show_my_patient', methods=['GET'])
+@jwt_required
+def show_my_patient():
+    online_user = get_jwt_identity()
+    guardian = User.get_or_none(User.id == online_user['id'])
+
+    if guardian:
+        role_list = UserRole.select().where(UserRole.user_id == guardian.id)
+        role_id_list = []
+        for r in role_list:
+            role_id_list.append(r.role_id)
+        if 2 in role_id_list:
+            patient_list = User.select().where(User.guardian_id == guardian.id)
+            if patient_list:
+                my_patient = []
+                for p in patient_list:
+                    disease_list = Disease.select().join(UserDisease).where(UserDisease.user_id == p.id) #select all existing disease(s)
+                    disease_name_list = []
+                    for d in disease_list:
+                        disease_name_list.append(d.disease_name)
+                    my_patient.append(
+                        {
+                            "id": p.id,
+                            "name": p.name,
+                            "email": p.email,
+                            "ic_number": p.ic_number,
+                            "gender": p.gender,
+                            "disease": disease_name_list,
+                        }
+                    )
+                response = {
+                    "status": "success",
+                    "is_guardian": True,
+                    "my_patient": my_patient
+                }
+            else:
+                response = {
+                    "message": "This guardian has no patient",
+                    "is_guardian": True,
+                    "status": "fail"
+                }
+
+        else:
+            response = {
+                "is_guardian": False,
+                "status": "fail"
+            }
+    else:
+        response = {
+            "valid": False,
+            "message": "User not exist",
+            "status": "fail"
         }
     return jsonify(response)
 

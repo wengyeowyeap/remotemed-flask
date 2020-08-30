@@ -66,8 +66,13 @@ def me():
                         "appointment_id": a.id,
                         "doctor_id": a.doctor_id,
                         "patient_id": a.patient_id,
+<<<<<<< HEAD
                         "appointment_time": a.start_datetime,
                         "appointment_endtime":a.end_datetime
+=======
+                        "start_time": a.start_datetime,
+                        "end_time": a.end_datetime
+>>>>>>> 17fb39126366f1f6c77355bd6766ed38ab1bc93d
                         })
                 response["doctor_records"] = doctor_records
                 return jsonify(response)
@@ -103,9 +108,14 @@ def me():
                                 "appointment_id": a.id,
                                 "doctor_id": a.doctor_id,
                                 "patient_id": a.patient_id,
+<<<<<<< HEAD
                                 "appointment_time": a.start_datetime,
                                 "appointment_endtime":a.end_datetime
 
+=======
+                                "start_time": a.start_datetime,
+                                "end_time": a.end_datetime,
+>>>>>>> 17fb39126366f1f6c77355bd6766ed38ab1bc93d
                             })
                             else:
                                 response["message"] = "Successfully retrieve appointment!"
@@ -113,8 +123,13 @@ def me():
                                 "appointment_id": a.id,
                                 "doctor_id": a.doctor_id,
                                 "patient_id": a.patient_id,
+<<<<<<< HEAD
                                 "appointment_time": a.start_datetime,
                                 "appointment_endtime":a.end_datetime
+=======
+                                "start_time": a.start_datetime,
+                                "end_time": a.end_datetime,
+>>>>>>> 17fb39126366f1f6c77355bd6766ed38ab1bc93d
                             })
                     response["patient_records"] = patient_records
                     response["guardian_record"] = guardian_record
@@ -141,8 +156,13 @@ def me():
                         "appointment_id": a.id,
                         "doctor_id": a.doctor_id,
                         "patient_id": a.patient_id,
+<<<<<<< HEAD
                         "appointment_time": a.start_datetime,
                         "appointment_endtime":a.end_datetime
+=======
+                        "start_time": a.start_datetime,
+                        "end_time": a.end_datetime
+>>>>>>> 17fb39126366f1f6c77355bd6766ed38ab1bc93d
                     })
                 response["patient_record"] = patient_record
                 return jsonify(response)
@@ -174,8 +194,13 @@ def me():
                             "appointment_id": a.id,
                             "doctor_id": a.doctor_id,
                             "patient_id": a.patient_id,
+<<<<<<< HEAD
                             "appointment_time": a.start_datetime,
                             "appointment_endtime":a.end_datetime
+=======
+                            "start_time": a.start_datetime,
+                            "end_time": a.end_datetime
+>>>>>>> 17fb39126366f1f6c77355bd6766ed38ab1bc93d
                             })
                         
                     response["patient's record"] = records
@@ -194,7 +219,7 @@ def me():
 @appointments_api_blueprint.route('/show', methods=['GET'])
 @jwt_required
 def show():
-    ic_number = request.json.get("ic_number")
+    ic_number = request.args.get("ic_number")
     verified_user = User.get_or_none(User.ic_number==ic_number)
     current_date_time = datetime.datetime.now()
     if verified_user:
@@ -213,7 +238,8 @@ def show():
                     "appointment_id": a.id,
                     "doctor_id": a.doctor_id,
                     "patient_id": a.patient_id,
-                    "appointment_time": a.start_datetime
+                    "start_time": a.start_datetime,
+                    "end_time": a.end_datetime,
                 })
                 
                 if enddatetime > current_date_time:
@@ -222,7 +248,8 @@ def show():
                     "appointment_id": a.id,
                     "doctor_id": a.doctor_id,
                     "patient_id": a.patient_id,
-                    "appointment_time": a.start_datetime
+                    "start_time": a.start_datetime,
+                    "end_time": a.end_datetime
                     })
             
             response["all_list"] = all_list
@@ -239,17 +266,18 @@ def show():
             "status": "failed"
             })
 
-@appointments_api_blueprint.route('/', methods=['GET'])
+@appointments_api_blueprint.route('/search', methods=['GET'])
 @jwt_required
 def search():
-    id = request.json.get("appointment_id")
+    id = request.args.get("appointment_id")
     appointment = Appointment.get_or_none(Appointment.id==id)
     if appointment:
         return jsonify({
             "appointment_id": appointment.id,
             "doctor_id": appointment.doctor_id,
             "patient_id": appointment.patient_id,
-            "appointment_time": appointment.start_datetime
+            "appointment_start": appointment.start_datetime,
+            "appointment_end": appointment.end_datetime
         })
     else:
         return jsonify({
@@ -314,5 +342,3 @@ def destroy():
             "message": "No such appointment exists.",
             "status": "failed"
         })
-
-
