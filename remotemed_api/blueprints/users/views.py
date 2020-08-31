@@ -336,7 +336,7 @@ def show_patient():
             disease_name_list = []
             for d in disease_list:
                 disease_name_list.append(d.disease_name)
-            if user.guardian.name:
+            if user.guardian:
                 display_guardian = user.guardian.name
             else:
                 display_guardian = None
