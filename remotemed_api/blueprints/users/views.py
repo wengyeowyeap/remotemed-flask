@@ -142,8 +142,11 @@ def edit():
         user.email = request.json.get('email')
         user.gender = request.json.get('gender')
 
-        new_guardian = User.get_or_none(User.ic_number == request.json.get('guardian'))
-        user.guardian = new_guardian.id
+        if request.json.get('guardian'):
+            new_guardian = User.get_or_none(User.ic_number == request.json.get('guardian'))
+            user.guardian = new_guardian.id
+        else:
+            pass
 
 
         role = request.json.get('role')
@@ -333,6 +336,10 @@ def show_patient():
             disease_name_list = []
             for d in disease_list:
                 disease_name_list.append(d.disease_name)
+            if user.guardian.name:
+                display_guardian = user.guardian.name
+            else:
+                display_guardian = None
             response = {
                             "id": user.id,
                             "name": user.name,
@@ -341,7 +348,7 @@ def show_patient():
                             "gender": user.gender,
                             "role": role_name_list,
                             "disease": disease_name_list,
-                            "guardian": user.guardian.name
+                            "guardian": display_guardian
                         }
         
         else:
