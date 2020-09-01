@@ -153,26 +153,42 @@ def edit():
         if user.save():
             if user.id != online_user['id']:
                 if role:
+                    roles = []
                     role_list = UserRole.select().where(UserRole.user_id == user.id) #select all existing role(s)
+                    for r in role_list:
+                        roles.append(r.role_id)
                     #Delete obselete role
                     for r in role_list:
-                        if r not in role:
+                        if str(r.role_id) not in role:
                             del_role = UserRole.get_or_none(UserRole.role_id == r.role_id, UserRole.user_id == user.id)
                             del_role.delete_instance()
+                            roles = []
+                            role_list = UserRole.select().where(UserRole.user_id == user.id) #select all existing role(s)
+                            for r in role_list:
+                                roles.append(r.role_id)
                     #Add new role
                     for i in range(len(role)):
-                        if role[i-1] not in role_list:
+                        print(int(role[i-1]))
+                        print(roles)
+                        if int(role[i-1]) not in roles:
                             new_role = UserRole(user = user, role_id = role[i-1])
                             if new_role.save():
-                                pass
+                                roles = []
+                                role_list = UserRole.select().where(UserRole.user_id == user.id) #select all existing role(s)
+                                for r in role_list:
+                                    roles.append(r.role_id)
                             else:
                                 response = {
                                         "message": "Can't add new role, please try again",
                                         "status": "failed"
                                     }
                 else:
-                    pass
-                    if "1" in role:
+                    role_list = UserRole.select().where(UserRole.user_id == user.id)
+                    role = []
+                    for r in role_list:
+                        role.append(r.role_id)
+                    if 1 in roles:
+                        print('bye')
                         if disease:
                             disease_list = UserDisease.select().where(UserDisease.user_id == user.id) #select all existing disease(s)
                             #Add new disease
@@ -428,12 +444,16 @@ def me():
     user = User.get_or_none(User.id == online_user['id'])
  
     if user:
-    
+        role_list = UserRole.select().where(UserRole.user_id == user.id)
+        role_id_list = []
+        for r in role_list:
+            role_id_list.append(r.role_id)
         response = {
                         "id": user.id,
                         "name": user.name,
                         "email": user.email,
                         "ic_number": user.ic_number,
+                        "role": role_id_list,
                         "gender": user.gender,
                     }
 
@@ -442,4 +462,5 @@ def me():
             "message": "User not found",
             "status": "failed"
         }
+    print(response)
     return jsonify(response)
