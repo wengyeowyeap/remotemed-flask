@@ -142,55 +142,61 @@ def edit():
         user.email = request.json.get('email')
         user.gender = request.json.get('gender')
 
-        new_guardian = User.get_or_none(User.ic_number == request.json.get('guardian'))
-        user.guardian = new_guardian.id
-
-
+        if request.json.get('guardian'):
+            new_guardian = User.get_or_none(User.ic_number == request.json.get('guardian'))
+            user.guardian = new_guardian.id
+        else:
+            pass
         role = request.json.get('role')
         disease = request.json.get('disease')
 
         if user.save():
             if user.id != online_user['id']:
-                
-                role_list = UserRole.select().where(UserRole.user_id == user.id) #select all existing role(s)
-                #Delete obselete role
-                for r in role_list:
-                    if r not in role:
-                        del_role = UserRole.get_or_none(UserRole.role_id == r.role_id, UserRole.user_id == user.id)
-                        del_role.delete_instance()
-                #Add new role
-                for i in range(len(role)):
-                    if role[i-1] not in role_list:
-                        new_role = UserRole(user = user, role_id = role[i-1])
-                        if new_role.save():
-                            pass
-                        else:
-                            response = {
-                                    "message": "Can't add new role, please try again",
-                                    "status": "failed"
-                                }
-                if "1" in role:
-                    disease_list = UserDisease.select().where(UserDisease.user_id == user.id) #select all existing disease(s)
-                    #Add new disease
-                    for d in disease_list:
-                        if d not in disease:
-                            del_disease = UserDisease.get_or_none(UserDisease.disease_id == d.disease_id, UserDisease.user_id == user.id)
-                            del_disease.delete_instance()                        
-                    #delete obsolete disease
-                    for i in range(len(disease)):
-                        if disease[i-1] not in disease_list:
-                            new_disease = UserDisease(user = user, disease_id = disease[i-1])
-                            if new_disease.save():
+                if role:
+                    role_list = UserRole.select().where(UserRole.user_id == user.id) #select all existing role(s)
+                    #Delete obselete role
+                    for r in role_list:
+                        if r not in role:
+                            del_role = UserRole.get_or_none(UserRole.role_id == r.role_id, UserRole.user_id == user.id)
+                            del_role.delete_instance()
+                    #Add new role
+                    for i in range(len(role)):
+                        if role[i-1] not in role_list:
+                            new_role = UserRole(user = user, role_id = role[i-1])
+                            if new_role.save():
                                 pass
+                            else:
+                                response = {
+                                        "message": "Can't add new role, please try again",
+                                        "status": "failed"
+                                    }
+                else:
+                    pass
+                    if "1" in role:
+                        if disease:
+                            disease_list = UserDisease.select().where(UserDisease.user_id == user.id) #select all existing disease(s)
+                            #Add new disease
+                            for d in disease_list:
+                                if d not in disease:
+                                    del_disease = UserDisease.get_or_none(UserDisease.disease_id == d.disease_id, UserDisease.user_id == user.id)
+                                    del_disease.delete_instance()                        
+                            #delete obsolete disease
+                            for i in range(len(disease)):
+                                if disease[i-1] not in disease_list:
+                                    new_disease = UserDisease(user = user, disease_id = disease[i-1])
+                                    if new_disease.save():
+                                        pass
+                                else:
+                                    response = {
+                                            "message": "Can't add new disease, please try again",
+                                            "status": "failed"
+                                        }
                         else:
-                            response = {
-                                    "message": "Can't add new disease, please try again",
-                                    "status": "failed"
-                                }
-                response = {
-                    "message": "Updated user info successfully!",
-                    "status": "success"
-                }
+                            pass
+                    response = {
+                        "message": "Updated user info successfully!",
+                        "status": "success"
+                    }
             else:
                 response = {
                     "message": "Updated user info successfully!",
@@ -333,6 +339,10 @@ def show_patient():
             disease_name_list = []
             for d in disease_list:
                 disease_name_list.append(d.disease_name)
+            if user.guardian:
+                display_guardian = user.guardian.name
+            else:
+                display_guardian = None
             response = {
                             "id": user.id,
                             "name": user.name,
@@ -341,7 +351,7 @@ def show_patient():
                             "gender": user.gender,
                             "role": role_name_list,
                             "disease": disease_name_list,
-                            "guardian": user.guardian.name
+                            "guardian": display_guardian
                         }
         
         else:
