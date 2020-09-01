@@ -126,7 +126,8 @@ def show():
                                     "systolic_blood_pressure": r.systolic_blood_pressure,
                                     "diastolic_blood_pressure": r.diastolic_blood_pressure,
                                     "doctor_id" : appointment.doctor_id,
-                                    "patient_id" : appointment.patient_id                                    
+                                    "patient_id" : appointment.patient_id,
+                                                                    
                                     }
                             )
                         response["my_patient_record"] = my_patient_record
@@ -164,6 +165,12 @@ def show():
             if record_list:
                 for r in record_list:
                     appointment = Appointment.get_or_none(Appointment.id == r.appointment_id)
+                    image_row=Patient_Photo.select().where(Patient_Photo.record_id==r.id)
+                    image_list=[]
+                    for i in image_row:
+                        image_list.append(i.full_image_url)
+                    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+                    print(image_list)
                     my_patient_record.append({
                             "record_id": r.id,
                             "appointment_id": r.appointment_id,
@@ -176,7 +183,8 @@ def show():
                             "systolic_blood_pressure": r.systolic_blood_pressure,
                             "diastolic_blood_pressure": r.diastolic_blood_pressure,
                             "doctor_id" : appointment.doctor_id,
-                            "patient_id" : appointment.patient_id
+                            "patient_id" : appointment.patient_id,
+                            "image_list":image_list
                         }                        
                     )
                 response = {
@@ -204,7 +212,8 @@ def show():
                             "systolic_blood_pressure": r.systolic_blood_pressure,
                             "diastolic_blood_pressure": r.diastolic_blood_pressure,
                             "doctor_id" : appointment.doctor_id,
-                            "patient_id" : appointment.patient_id                            
+                            "patient_id" : appointment.patient_id,
+                            "YOWASSUP":"HOW ARE YOU"                           
                         }
                     )
                 response = {
@@ -240,7 +249,8 @@ def show():
                                     "systolic_blood_pressure": r.systolic_blood_pressure,
                                     "diastolic_blood_pressure": r.diastolic_blood_pressure,
                                     "doctor_id" : appointment.doctor_id,
-                                    "patient_id" : appointment.patient_id   
+                                    "patient_id" : appointment.patient_id,
+
                                 }                      
                             )
                         response = {
@@ -340,6 +350,10 @@ def me():
             if record_list:
                 for r in record_list:
                     appointment = Appointment.get_or_none(Appointment.id == r.appointment_id)
+                    image_row=Patient_Photo.select().where(Patient_Photo.record_id==r.id)
+                    image_list=[]
+                    for i in image_row:
+                        image_list.append(i.full_image_url)
                     my_patient_record.append({
                             "record_id": r.id,
                             "appointment_id": r.appointment_id,
@@ -352,7 +366,8 @@ def me():
                             "systolic_blood_pressure": r.systolic_blood_pressure,
                             "diastolic_blood_pressure": r.diastolic_blood_pressure,
                             "doctor_id" : appointment.doctor_id,
-                            "patient_id" : appointment.patient_id
+                            "patient_id" : appointment.patient_id,
+                            "image_list":image_list
                         }                        
                     )
                 response = {
