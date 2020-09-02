@@ -75,3 +75,4 @@ def create():
       }
   else:
     for x in result.errors.deep_errors: flash('Error: %s: %s' % (x.code, x.message))
+  return jsonify(response)

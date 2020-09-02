@@ -251,13 +251,30 @@ def show():
 def search():
     id = request.args.get("appointment_id")
     appointment = Appointment.get_or_none(Appointment.id==id)
+    record = Record.get_or_none(Record.appointment_id == id)
+    doctor = User.get_or_none(User.id == appointment.doctor_id)
+    patient = User.get_or_none(User.id == appointment.patient_id)
+    
+    if record:
+        if record.zoom_url:
+            zoom_link = record.zoom_url
+        else:
+            zoom_link = ""
+    else:
+        pass
+
     if appointment:
         return jsonify({
             "appointment_id": appointment.id,
             "doctor_id": appointment.doctor_id,
             "patient_id": appointment.patient_id,
+            "doctor_ic": doctor.ic_number,
+            "patient_ic": patient.ic_number,
+            "doctor_name": doctor.name,
+            "patient_name": patient.name,
             "appointment_start": appointment.start_datetime,
-            "appointment_end": appointment.end_datetime
+            "appointment_end": appointment.end_datetime,
+            "zoom_link": zoom_link
         })
     else:
         return jsonify({
@@ -343,36 +360,38 @@ def create_client():
     new_meeting = client.meeting.create(user_id=user_id).json()
     join_url = new_meeting['join_url']
     
-    id = request.args.get('record_id')
-    record = Record.get_or_none(Record.id == id)
+    id = request.args.get('appointment_id')
+    record = Record.get_or_none(Record.appointment_id == id)
 
     record.zoom_url = join_url
     if record.save():
-        return new_meeting
+        return join_url
     else:
         return "fail"
 
-@appointments_api_blueprint.route('/create_signature', methods=['POST'])
-@jwt_required
-def create_signature():
-    import hashlib
-    import hmac
-    import base64
-    import time
-    from app import app
 
-    ts = int(round(time.time() * 1000)) - 30000
-    msg = app.config.get('ZOOM_API_KEY') + str(request.json.get('meetingNumber')) + str(ts) + str(request.json.get('role'));   
-    message = base64.b64encode(bytes(msg, 'utf-8'))
-    # message = message.decode("utf-8");    
-    secret = bytes(app.config.get('ZOOM_API_SECRET'), 'utf-8')
-    hash = hmac.new(secret, message, hashlib.sha256)
-    hash =  base64.b64encode(hash.digest())
-    hash = hash.decode("utf-8")
-    tmpString = "%s.%s.%s.%s.%s" % (app.config.get('ZOOM_API_KEY'), str(request.json.get('meetingNumber')), str(ts), str(request.json.get('role')), hash)
-    signature = base64.b64encode(bytes(tmpString, "utf-8"))
-    signature = signature.decode("utf-8")
-    return signature.rstrip("=")
+
+# @appointments_api_blueprint.route('/create_signature', methods=['POST'])
+# @jwt_required
+# def create_signature():
+#     import hashlib
+#     import hmac
+#     import base64
+#     import time
+#     from app import app
+
+#     ts = int(round(time.time() * 1000)) - 30000
+#     msg = app.config.get('ZOOM_API_KEY') + str(request.json.get('meetingNumber')) + str(ts) + str(request.json.get('role'));   
+#     message = base64.b64encode(bytes(msg, 'utf-8'))
+#     # message = message.decode("utf-8");    
+#     secret = bytes(app.config.get('ZOOM_API_SECRET'), 'utf-8')
+#     hash = hmac.new(secret, message, hashlib.sha256)
+#     hash =  base64.b64encode(hash.digest())
+#     hash = hash.decode("utf-8")
+#     tmpString = "%s.%s.%s.%s.%s" % (app.config.get('ZOOM_API_KEY'), str(request.json.get('meetingNumber')), str(ts), str(request.json.get('role')), hash)
+#     signature = base64.b64encode(bytes(tmpString, "utf-8"))
+#     signature = signature.decode("utf-8")
+#     return signature.rstrip("=")
 
 
 

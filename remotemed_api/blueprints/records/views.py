@@ -64,7 +64,7 @@ def create():
                 image.filename = str(datetime.now()) + file_extension
                 image.filename = secure_filename(image.filename)
                 image_url = upload_file_to_s3(image, user.ic_number)
-                upload_image = Patient_Photo(record_id = 1, image_url = image_url, caption = caption)
+                upload_image = Patient_Photo(record_id = patient_record.id, image_url = image_url, caption = caption)
                 
                 if upload_image.save():
                     images.append({

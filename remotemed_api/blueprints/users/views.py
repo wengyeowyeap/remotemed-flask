@@ -12,7 +12,6 @@ users_api_blueprint = Blueprint('users_api',
                              template_folder='templates')
 
 @users_api_blueprint.route('/create', methods=['POST'])
-@jwt_required
 def create():
     name = request.json.get('name')
     password = request.json.get('password')
@@ -21,10 +20,14 @@ def create():
     gender = request.json.get('gender')
     role = request.json.get('role')
 
-    if ("1" in role) or ("1" in role and "2" in role) : #if this is patient or patient/guardian
+    if ("1" in role) or ("1" in role and "2" in role) : #if this is patient or patient/guardian        
         new_guardian = User.get_or_none(User.ic_number == request.json.get('guardian'))
+        if new_guardian:
+            guardian_id = new_guardian.id
+        else:
+            guardian_id = None
         disease = request.json.get('disease') #value need to be number, example: 1->diabetes
-        new_user = User(name = name, password = password, email = email, ic_number = ic_number, gender = gender, guardian = new_guardian.id)   
+        new_user = User(name = name, password = password, email = email, ic_number = ic_number, gender = gender, guardian = guardian_id)   
         if new_user.save():
             for i in range(len(disease)):
                 user_disease = UserDisease(disease=int(disease[i-1]), user=new_user)
@@ -53,7 +56,7 @@ def create():
                             "ic_number": new_user.ic_number,
                             "gender": new_user.gender,
                             "role": [user_role.role.role_name, user_role2.role.role_name],
-                            "guardian": new_user.guardian.id
+                            "guardian": new_user.guardian
                         }
                     }
                     response["user"]["disease"] = disease_name_list
@@ -79,7 +82,7 @@ def create():
                             "ic_number": new_user.ic_number,
                             "gender": new_user.gender,
                             "role": user_role.role.role_name,
-                            "guardian": new_user.guardian.id
+                            "guardian": new_user.guardian
                         }
                     }
                     response["user"]["disease"] = disease_name_list
