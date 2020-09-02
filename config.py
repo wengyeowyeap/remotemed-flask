@@ -10,6 +10,8 @@ class Config(object):
     S3_SECRET = os.environ.get("S3_SECRET_ACCESS_KEY")
     S3_LOCATION = 'http://{}.s3.amazonaws.com/'.format(S3_BUCKET)
     JWT_ACCESS_TOKEN_EXPIRES = False
+    ZOOM_API_KEY = os.environ.get("ZOOM_API_KEY")
+    ZOOM_API_SECRET = os.environ.get("ZOOM_API_SECRET")
 
 class ProductionConfig(Config):
     DEBUG = False

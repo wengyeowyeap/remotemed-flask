@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from models.appointment import Appointment
+from models.record import Record
 from models.user import User
 from models.user_role import UserRole
 from models.role import Role
@@ -22,26 +23,31 @@ def create():
 
     doctor = User.get_or_none(User.ic_number==doctor_ic)
     patient = User.get_or_none(User.ic_number==patient_ic)
-    
-    new_appointment = Appointment(doctor_id=doctor.id, patient_id=patient.id, start_datetime=start_datetime, end_datetime=end_datetime)
-    if new_appointment.save():
-        return jsonify({
-            "message": "Successfully created an appointment",
-            "status ": "success",
-            "doctor_id": new_appointment.doctor_id,
-            "patient_id": new_appointment.patient_id,
-            "start_datetime": new_appointment.start_datetime,
-            "end_datetime": new_appointment.end_datetime
-        })
+    if doctor and patient:
+        new_appointment = Appointment(doctor_id=doctor.id, patient_id=patient.id, start_datetime=start_datetime, end_datetime=end_datetime)
+        if new_appointment.save():
+            return jsonify({
+                "message": "Successfully created an appointment",
+                "status ": "success",
+                "doctor_id": new_appointment.doctor_id,
+                "patient_id": new_appointment.patient_id,
+                "start_datetime": new_appointment.start_datetime,
+                "end_datetime": new_appointment.end_datetime
+            })
+        else:
+            error_msg = []
+            for err in new_appointment.errors:
+                error_msg.append(err)
+            response = {
+                "message": error_msg,
+                "status": "failed"
+            }
+            return jsonify(response)
     else:
-        error_msg = []
-        for err in new_appointment.errors:
-            error_msg.append(err)
-        response = {
-            "message": error_msg,
-            "status": "failed"
-        }
-        return jsonify(response)
+        return jsonify({
+            "message": "Can't find doctor or patient",
+            "status ": "fail",
+        })
 
 @appointments_api_blueprint.route('/me', methods=['GET'])
 @jwt_required
@@ -316,3 +322,122 @@ def destroy():
             "message": "No such appointment exists.",
             "status": "failed"
         })
+
+@appointments_api_blueprint.route('/create_client', methods=['GET'])
+@jwt_required
+def create_client():
+    import json
+    from zoomus import ZoomClient
+    from zoomus.components import meeting
+    from app import app
+
+    client = ZoomClient(app.config.get('ZOOM_API_KEY'), app.config.get('ZOOM_API_SECRET'))
+
+    user_list_response = client.user.list()
+    user_list = json.loads(user_list_response.content)
+
+    for user in user_list['users']:
+        user_id = user['id']
+        print(json.loads(client.meeting.list(user_id=user_id).content))
+
+    new_meeting = client.meeting.create(user_id=user_id).json()
+    join_url = new_meeting['join_url']
+    
+    id = request.args.get('record_id')
+    record = Record.get_or_none(Record.id == id)
+
+    record.zoom_url = join_url
+    if record.save():
+        return new_meeting
+    else:
+        return "fail"
+
+@appointments_api_blueprint.route('/create_signature', methods=['POST'])
+@jwt_required
+def create_signature():
+    import hashlib
+    import hmac
+    import base64
+    import time
+    from app import app
+
+    ts = int(round(time.time() * 1000)) - 30000
+    msg = app.config.get('ZOOM_API_KEY') + str(request.json.get('meetingNumber')) + str(ts) + str(request.json.get('role'));   
+    message = base64.b64encode(bytes(msg, 'utf-8'))
+    # message = message.decode("utf-8");    
+    secret = bytes(app.config.get('ZOOM_API_SECRET'), 'utf-8')
+    hash = hmac.new(secret, message, hashlib.sha256)
+    hash =  base64.b64encode(hash.digest())
+    hash = hash.decode("utf-8")
+    tmpString = "%s.%s.%s.%s.%s" % (app.config.get('ZOOM_API_KEY'), str(request.json.get('meetingNumber')), str(ts), str(request.json.get('role')), hash)
+    signature = base64.b64encode(bytes(tmpString, "utf-8"))
+    signature = signature.decode("utf-8")
+    return signature.rstrip("=")
+
+
+
+
+# @appointments_api_blueprint.route('/create_room', methods=['POST'])
+# @jwt_required
+# def create_room():
+#     from twilio.rest import Client
+#     from app import app
+#     appointment_id = request.json.get('appointment_id')
+#     account_sid = app.config.get('TWILIO_SID')
+#     auth_token = app.config.get('TWILIO_AUTHTOKEN')
+#     client = Client(account_sid, auth_token)
+
+#     #create peer to peer room ==> https://www.twilio.com/docs/video/api/rooms-resource#post-list-resource
+#     room = client.video.rooms.create(
+#                                 enable_turn=True,
+#                                 status_callback='http://127.0.0.1:5000/api/v1/appointments/roomevent',
+#                                 type='peer-to-peer',
+#                                 unique_name=f'test20'
+#                             )
+#     response={
+#         "room_sid": room.sid,
+#         "message": "created room",
+
+#     }
+#     return jsonify(response)
+    
+# @appointments_api_blueprint.route('/create_access', methods=['GET'])
+# @jwt_required
+# def create_access():
+#     from twilio.jwt.access_token import AccessToken
+#     from twilio.jwt.access_token.grants import VideoGrant
+#     from app import app
+#     # Required for all Twilio Access Tokens
+#     account_sid = app.config.get('TWILIO_SID')
+#     api_key = app.config.get('TWILIO_API_KEY')
+#     api_secret = app.config.get('TWILIO_API_SECRET')
+
+#     # required for Video grant
+#     online_user = get_jwt_identity()
+#     identity = online_user['name'] + " (" + online_user['ic_number'] + ")"
+
+#     # Create Access Token with credentials
+#     token = AccessToken(account_sid, api_key, api_secret, identity=identity)
+
+#     # Create a Video grant and add to token
+#     online_user = get_jwt_identity()
+#     user = User.get_or_none(User.id == online_user['id'])
+#     video_grant = VideoGrant(room=f'remotemed appointment')
+#     token.add_grant(video_grant)
+
+#     # Return token info as JSON
+#     print(token.to_jwt())
+
+#     return token.to_jwt()
+
+# @appointments_api_blueprint.route('/roomevent', methods=['POST'])
+# def roomevent():
+#     status = request.json.get('StatusCallbackEvent')
+#     timestamp = request.json.get('Timestamp')
+
+#     response = {
+#         "status": status,
+#         "timestamp": timestamp 
+#     }
+#     print(response)
+#     return jsonify(response)

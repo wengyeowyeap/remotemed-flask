@@ -461,6 +461,8 @@ def search():
     
     if record:
         appointment = Appointment.get_or_none(Appointment.id==record.appointment_id)
+        doctor = User.get_or_none(User.id == appointment.doctor_id)
+        patient = User.get_or_none(User.id == appointment.patient_id)
         return jsonify({
             "record_id": record.id,
             "appointment_id": record.appointment_id,
@@ -472,8 +474,10 @@ def search():
             "sugar_level": str(record.sugar_level),
             "systolic_blood_pressure": record.systolic_blood_pressure,
             "diastolic_blood_pressure": record.diastolic_blood_pressure,
-            "doctor_id" : appointment.doctor_id,
-            "patient_id" : appointment.patient_id  
+            "doctor_name" : doctor.name,
+            "doctor_id" : doctor.id,
+            "patient_name" : patient.name,
+            "patient_id" : patient.id 
         })
     else:
         return jsonify({

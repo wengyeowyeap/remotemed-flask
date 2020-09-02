@@ -12,3 +12,4 @@ class Record(BaseModel):
   sugar_level = pw.DecimalField(null=True)
   systolic_blood_pressure = pw.IntegerField(null=True)
   diastolic_blood_pressure = pw.IntegerField(null=True)
+  zoom_url = pw.TextField(null=True)
