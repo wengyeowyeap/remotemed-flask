@@ -4,6 +4,7 @@ from models.user import User
 from models.user_role import UserRole
 from models.role import Role
 from datetime import datetime
+from playhouse.hybrid import hybrid_property
 
 class Appointment(BaseModel):
   doctor = pw.ForeignKeyField(User, null=False)
@@ -65,3 +66,32 @@ class Appointment(BaseModel):
         print('No appointments for these doctor and patient. Validation passed.')
 
     print(self.errors)
+
+  @hybrid_property
+  def record(self):
+    from models.record import Record
+    from models.patient_photo import Patient_Photo
+    r = Record.get_or_none(Record.appointment_id == self.id)
+    photo_list = []
+    photo = Patient_Photo.select().where(Patient_Photo.record == r)
+    for p in photo:
+        photo_list.append(p.full_image_url)
+    result = {
+      "record_id": r.id,
+      "appointment_id": r.appointment_id,
+      "report": r.report,
+      "prescription": r.prescription,
+      "payment_amount": str(r.payment_amount),
+      "paid": r.paid,
+      "cholestrol_level": str(float(r.cholestrol_level)),
+      "sugar_level": str(float(r.sugar_level)),
+      "systolic_blood_pressure": str(float(r.systolic_blood_pressure)),
+      "diastolic_blood_pressure": str(float(r.diastolic_blood_pressure)),
+      "doctor_name": r.appointment.doctor.name,
+      "doctor_ic": r.appointment.doctor.ic_number,
+      "patient_name": r.appointment.patient.name,
+      "patient_ic": r.appointment.patient.ic_number,
+      "record_photo": photo_list
+    }
+
+    return result
