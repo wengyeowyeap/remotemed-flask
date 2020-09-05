@@ -52,27 +52,27 @@ class User(BaseModel):
             if self.gender != 'female': #check if gender is a female string
                 self.errors.append("Input is not 'male' or 'female'")
     
-    def role(self, user):
+    def role(self):
         from models.user_role import UserRole
         from models.role import Role
-        role_list = Role.select().join(UserRole).where(UserRole.user == user)
+        role_list = Role.select().join(UserRole).where(UserRole.user == self)
         role_name_list = []
         for r in role_list:
             role_name_list.append(r.role_name)
         return role_name_list #["patient", "guardian"]
 
-    def disease(self, user):
+    def disease(self):
         from models.user_disease import UserDisease
         from models.disease import Disease
-        disease_list = Disease.select().join(UserDisease).where(UserDisease.user == user)
+        disease_list = Disease.select().join(UserDisease).where(UserDisease.user == self)
         disease_name_list = []
         for d in disease_list:
             disease_name_list.append(d.disease_name)
         return disease_name_list #["diabetes", "hypertension"]
 
-    def upcoming_appointment(self, user):
+    def upcoming_appointment(self):
         from models.appointment import Appointment
-        upcoming_appointment = Appointment.select().where((Appointment.doctor == user) | (Appointment.patient == user))
+        upcoming_appointment = Appointment.select().where((Appointment.doctor == self) | (Appointment.patient == self))
         upcoming_appointment_list = []
         for a in upcoming_appointment:
             if a.end_datetime > datetime.now():
@@ -87,9 +87,9 @@ class User(BaseModel):
                             })
         return upcoming_appointment_list
     
-    def past_appointment(self, user):
+    def past_appointment(self):
         from models.appointment import Appointment
-        past_appointment = Appointment.select().where((Appointment.doctor == user) | (Appointment.patient == user))
+        past_appointment = Appointment.select().where((Appointment.doctor == self) | (Appointment.patient == self))
         past_appointment_list = []
         for a in past_appointment:
             if a.end_datetime < datetime.now():
@@ -104,11 +104,11 @@ class User(BaseModel):
                             })
         return past_appointment_list
     
-    def record(self, user):
+    def record(self):
         from models.record import Record
         from models.appointment import Appointment
         from models.patient_photo import Patient_Photo
-        record = Record.select().join(Appointment).where((Appointment.doctor == user) | (Appointment.patient == user))
+        record = Record.select().join(Appointment).where((Appointment.doctor == self) | (Appointment.patient == self))
         record_list = []
         for r in record:
             photo_list = []
@@ -134,8 +134,8 @@ class User(BaseModel):
                         })
         return record_list
     
-    def my_patient(self, guardian):
-        patient = User.select().where(User.guardian == guardian)
+    def my_patient(self):
+        patient = User.select().where(User.guardian == self)
         patient_list = []
         for p in patient:
             patient_list.append(p.id)
