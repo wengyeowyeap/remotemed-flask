@@ -3,6 +3,7 @@ import peewee as pw
 import re
 from werkzeug.security import generate_password_hash
 from datetime import datetime
+from playhouse.hybrid import hybrid_property
 
 class User(BaseModel):
     name = pw.CharField(null=False)
@@ -52,6 +53,7 @@ class User(BaseModel):
             if self.gender != 'female': #check if gender is a female string
                 self.errors.append("Input is not 'male' or 'female'")
     
+    @hybrid_property    
     def role(self):
         from models.user_role import UserRole
         from models.role import Role
@@ -61,6 +63,7 @@ class User(BaseModel):
             role_name_list.append(r.role_name)
         return role_name_list #["patient", "guardian"]
 
+    @hybrid_property 
     def disease(self):
         from models.user_disease import UserDisease
         from models.disease import Disease
@@ -70,6 +73,7 @@ class User(BaseModel):
             disease_name_list.append(d.disease_name)
         return disease_name_list #["diabetes", "hypertension"]
 
+    @hybrid_property 
     def upcoming_appointment(self):
         from models.appointment import Appointment
         upcoming_appointment = Appointment.select().where((Appointment.doctor == self) | (Appointment.patient == self))
@@ -86,7 +90,8 @@ class User(BaseModel):
                                 "end_time": a.end_datetime.strftime("%Y-%m-%d %H:%M:%S")
                             })
         return upcoming_appointment_list
-    
+
+    @hybrid_property     
     def past_appointment(self):
         from models.appointment import Appointment
         past_appointment = Appointment.select().where((Appointment.doctor == self) | (Appointment.patient == self))
@@ -103,7 +108,8 @@ class User(BaseModel):
                                 "end_time": a.end_datetime.strftime("%Y-%m-%d %H:%M:%S")
                             })
         return past_appointment_list
-    
+
+    @hybrid_property     
     def record(self):
         from models.record import Record
         from models.appointment import Appointment
@@ -133,7 +139,8 @@ class User(BaseModel):
                             "record_photo": photo_list
                         })
         return record_list
-    
+
+    @hybrid_property     
     def my_patient(self):
         patient = User.select().where(User.guardian == self)
         patient_list = []
