@@ -18,8 +18,7 @@ class BaseModel(pw.Model):
             return 0
 
     def validate(self):
-        print(
-            f"Warning validation method not implemented for {str(type(self))}")
+        print(f"Warning validation method not implemented for {str(type(self))}")
         return True
 
     class Meta:

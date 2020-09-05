@@ -3,94 +3,65 @@ import peewee as pw
 from models.user import User
 from models.user_role import UserRole
 from models.role import Role
-import datetime
+from datetime import datetime
 
 class Appointment(BaseModel):
-  doctor = pw.ForeignKeyField(User, backref='doctor', null=False)
-  patient = pw.ForeignKeyField(User, backref='patient', null=False)
+  doctor = pw.ForeignKeyField(User, null=False)
+  patient = pw.ForeignKeyField(User, null=False)
   start_datetime = pw.DateTimeField(null=False)
   end_datetime = pw.DateTimeField(null=False)
 
   def validate(self):
-    is_doctor = UserRole.get_or_none(UserRole.user_id==self.doctor, UserRole.role_id==3)
+    #check if 'doctor' entered is a doctor
+    is_doctor = UserRole.get_or_none((UserRole.user_id == self.doctor) & (UserRole.role_id == 3))
     if not is_doctor:
-      self.errors.append("This is not a doctor's id")
+      self.errors.append("IC entered does not belong to a doctor.")
 
-    is_patient = UserRole.select().where(UserRole.user_id==self.patient, UserRole.role_id==1)
+    #check if 'patient' entered is a patient
+    is_patient = UserRole.select().where((UserRole.user_id == self.patient) & (UserRole.role_id == 1))
     if not is_patient:
-      self.errors.append("This is not a patient's id")
+      self.errors.append("IC entered does not belong to a patient.")
     
-    current_datetime = datetime.datetime.now()
-    
-    if self.id:
-      existing_doctor_appointments = Appointment.select().where(Appointment.doctor_id==self.doctor)
-      for a in existing_doctor_appointments:
-        starttime = datetime.datetime.strptime(self.start_datetime, '%Y-%m-%d %H:%M:%S')
-        endtime = datetime.datetime.strptime(self.end_datetime, '%Y-%m-%d %H:%M:%S')
-        if starttime > a.start_datetime and starttime < a.end_datetime and a.doctor_id != self.doctor_id:
-          self.errors.append("This doctor already has an appointment that crashed the time you've entered.")
-        elif endtime > a.start_datetime and endtime < a.end_datetime and a.doctor_id != self.doctor_id:
-          self.errors.append("This doctor already has an appointment that crashed the time you've entered.")
-        elif a.start_datetime > starttime and a.end_datetime < endtime and a.doctor_id != self.doctor_id:
-          self.errors.append("This doctor already has an appointment that crashed the time you've entered.")
-    
-      existing_patient_appointments = Appointment.select().where(Appointment.patient_id==self.patient)
-      for a in existing_patient_appointments:
-        starttime = datetime.datetime.strptime(self.start_datetime, '%Y-%m-%d %H:%M:%S')
-        endtime = datetime.datetime.strptime(self.end_datetime, '%Y-%m-%d %H:%M:%S')
-        if starttime > a.start_datetime and starttime < a.end_datetime and a.patient_id != self.patient_id:
-          self.errors.append("This patient already has an appointment that crashed the time you've entered.")
-        elif endtime > a.start_datetime and endtime < a.end_datetime and a.patient_id != self.patient_id:
-          self.errors.append("This patient already has an appointment that crashed the time you've entered.")
-        elif a.start_datetime > starttime and a.end_datetime < endtime and a.patient_id != self.patient_id:
-          self.errors.append("This patient already has an appointment that crashed the time you've entered.")
+    start = datetime.strptime(self.start_datetime, '%Y-%m-%d %H:%M:%S')
+    end = datetime.strptime(self.end_datetime, '%Y-%m-%d %H:%M:%S')
 
-    else:
-        existing_doctor_appointments = Appointment.select().where(Appointment.doctor_id==self.doctor)
-        for a in existing_doctor_appointments:
-          starttime = datetime.datetime.strptime(self.start_datetime, '%Y-%m-%d %H:%M:%S')
-          endtime = datetime.datetime.strptime(self.end_datetime, '%Y-%m-%d %H:%M:%S')
-          if starttime > a.start_datetime and starttime < a.end_datetime:
-            self.errors.append("This doctor already has an appointment that crashed the time you've entered.")
-          elif endtime > a.start_datetime and endtime < a.end_datetime:
-            self.errors.append("This doctor already has an appointment that crashed the time you've entered.")
-          elif a.start_datetime > starttime and a.end_datetime < endtime:
-            self.errors.append("This doctor already has an appointment that crashed the time you've entered.")
-      
-        existing_patient_appointments = Appointment.select().where(Appointment.patient_id==self.patient)
-        for a in existing_patient_appointments:
-          starttime = datetime.datetime.strptime(self.start_datetime, '%Y-%m-%d %H:%M:%S')
-          endtime = datetime.datetime.strptime(self.end_datetime, '%Y-%m-%d %H:%M:%S')
-          if starttime > a.start_datetime and starttime < a.end_datetime:
-            self.errors.append("This patient already has an appointment that crashed the time you've entered.")
-          elif endtime > a.start_datetime and endtime < a.end_datetime:
-            self.errors.append("This patient already has an appointment that crashed the time you've entered.")
-          elif a.start_datetime > starttime and a.end_datetime < endtime:
-            self.errors.append("This patient already has an appointment that crashed the time you've entered.")
+    #basic validation for start and end
+    if start == end:
+      self.errors.append("The start time and end time is the same.")  
+    if start > end:
+      self.errors.append("The start time is later than end time.")
+    if start.day != end.day:
+      self.errors.append("Appointments must be completed within the same day.")
 
-    duplicate_time = Appointment.get_or_none(Appointment.start_datetime==self.start_datetime, Appointment.end_datetime==self.end_datetime, Appointment.patient_id==self.patient, Appointment.doctor_id==self.doctor)
-    if duplicate_time and duplicate_time.id != self.id:
-      self.errors.append("duplicate record!")
+      # CREATE Appointment Validation Pseudocode
+      #1. search for all records containing self.doctor, self.patient (if no record, then create appointment)
+      #2. convert incoming datetime string into datetime object (to compare with database's DT object)
+      #3. Validation:
+      #   a. starttime cannot be the same
+      #   b. endtime cannot be the same
+      #   c. self.start cannot in between record's start and record's end
+      #   d. self.end cannot in between record's start and record's end
+      #   e. record's start cannot in between self.start and self.end
+      #   f. record's end cannot in between self.start and self.end
 
-    duplicate_doctor_time = Appointment.get_or_none(Appointment.start_datetime==self.start_datetime, Appointment.doctor_id==self.doctor) or Appointment.get_or_none(Appointment.end_datetime==self.end_datetime, Appointment.doctor_id==self.doctor)
-    if duplicate_doctor_time and duplicate_doctor_time.id != self.id:
-      self.errors.append("This doctor already has an appointment which have the exactly same starting time or ending time.")
-    
-    duplicate_patient_time = Appointment.get_or_none(Appointment.start_datetime==self.start_datetime, Appointment.end_datetime==self.end_datetime, Appointment.patient_id==self.patient)
-    if duplicate_patient_time and duplicate_patient_time.id != self.id:
-      self.errors.append("This patient already has an appointment which have the exactly same starting time and ending time.")
+      #EDIT Appointment Validation Pseudocode
+      # Same as CREATE, but exclude the appointment to be edited from query
 
-    same_start_end_time = (self.start_datetime == self.end_datetime)
-    if same_start_end_time:
-      self.errors.append("Starting time and ending time cannot be the same.")
+    if self.id: #if there is self.id --> *EDIT* appointment validation      
+      existing_appointments = Appointment.select().where(((Appointment.doctor == self.doctor) | (Appointment.patient == self.patient)) & (~(Appointment.id == self.id))) 
+      if existing_appointments > 0:
+        for a in existing_appointments: #loop through the records containing self.doctor, self.patient
+          if (start == a.start_datetime) or (end == a.end_datetime) or (start > a.start_datetime and start < a.end_datetime) or (end > a.start_datetime and end < a.end_datetime) or (a.start_datetime > start and a.start_datetime < end) or (a.end_datetime > start and a.end_datetime < end): 
+            self.errors.append("Appointment time slot not available.")
+      else:
+        print('No other appointments for these doctor and patient. Validation passed.')
+    else: #if there is no self.id --> *CREATE* appointment validation
+      existing_appointments = Appointment.select().where((Appointment.doctor == self.doctor) | (Appointment.patient == self.patient))  
+      if existing_appointments > 0:
+        for a in existing_appointments: #loop through the records containing self.doctor, self.patient
+          if (start == a.start_datetime) or (end == a.end_datetime) or (start > a.start_datetime and start < a.end_datetime) or (end > a.start_datetime and end < a.end_datetime) or (a.start_datetime > start and a.start_datetime < end) or (a.end_datetime > start and a.end_datetime < end): 
+            self.errors.append("Appointment time slot not available.")
+      else:
+        print('No appointments for these doctor and patient. Validation passed.')
 
-    start_time = self.start_datetime
-    end_time = self.end_datetime
-    if not (start_time[0:10]) == (end_time[0:10]):
-      self.errors.append("Appointment must be finished within a day.")
-  
-
-
-
-
-    
+    print(self.errors)

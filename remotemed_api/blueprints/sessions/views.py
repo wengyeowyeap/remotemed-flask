@@ -8,8 +8,9 @@ from werkzeug.security import check_password_hash
 from flask_jwt_extended import create_access_token
 
 sessions_api_blueprint = Blueprint('sessions_api',
-                             __name__,
-                             template_folder='templates')
+                                   __name__,
+                                   template_folder='templates')
+
 
 @sessions_api_blueprint.route('/login', methods=['POST'])
 def login():
@@ -17,12 +18,12 @@ def login():
     ic_number = params.get("ic_number")
     password = params.get("password")
 
-    user = User.get_or_none(User.ic_number==ic_number)
+    user = User.get_or_none(User.ic_number == ic_number)
     if user:
         result = check_password_hash(user.password_hash, password)
         if result:
-            user_role_list =[]
-            user_role = Role.select().join(UserRole).where(UserRole.user_id==user.id)
+            user_role_list = []
+            user_role = Role.select().join(UserRole).where(UserRole.user_id == user.id)
             for role in user_role:
                 user_role_list.append(role.id)
             if (1 in user_role_list) and (2 in user_role_list):
@@ -31,7 +32,8 @@ def login():
                 for role in role_list:
                     role_name_list.append(role.role_name)
                 diseases_name_list = []
-                diseases_list = Disease.select().join(UserDisease).where(UserDisease.user_id == user.id)
+                diseases_list = Disease.select().join(
+                    UserDisease).where(UserDisease.user_id == user.id)
                 for disease in diseases_list:
                     diseases_name_list.append(disease.disease_name)
                 if user.guardian_id != None:
@@ -132,18 +134,14 @@ def login():
                         "role": role_name_list,
                     }
                 })
-            
-
 
         else:
             return jsonify({
-                        "message": "Wrong Password, Please try again.",
-                        "status": "failed"
-                    })
+                "message": "Wrong Password, Please try again.",
+                "status": "failed"
+            })
     else:
         return jsonify({
-                        "message": "No such user exists.",
-                        "status": "failed"
-                    })
-            
-    
+            "message": "No such user exists.",
+            "status": "failed"
+        })

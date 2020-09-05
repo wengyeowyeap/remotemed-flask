@@ -8,8 +8,9 @@ from models.role import Role
 from werkzeug.security import check_password_hash
 
 users_api_blueprint = Blueprint('users_api',
-                             __name__,
-                             template_folder='templates')
+                                __name__,
+                                template_folder='templates')
+
 
 @users_api_blueprint.route('/create', methods=['POST'])
 def create():
@@ -20,14 +21,16 @@ def create():
     gender = request.json.get('gender')
     role = request.json.get('role')
 
-    if ("1" in role) or ("1" in role and "2" in role) : #if this is patient or patient/guardian        
-        new_guardian = User.get_or_none(User.ic_number == request.json.get('guardian'))
+    if ("1" in role) or ("1" in role and "2" in role):  # if this is patient or patient/guardian
+        new_guardian = User.get_or_none(
+            User.ic_number == request.json.get('guardian'))
         if new_guardian:
             guardian_id = new_guardian.id
         else:
             guardian_id = None
-        disease = request.json.get('disease') #value need to be number, example: 1->diabetes
-        new_user = User(name = name, password = password, email = email, ic_number = ic_number, gender = gender, guardian = guardian_id)   
+        # value need to be number, example: 1->diabetes
+        disease = request.json.get('disease')
+        new_user = User(name=name, password=password, email=email, ic_number=ic_number, gender=gender, guardian=guardian_id)
         if new_user.save():
             for i in range(len(disease)):
                 user_disease = UserDisease(disease=int(disease[i-1]), user=new_user)
@@ -91,19 +94,19 @@ def create():
                         "message": "Some error occured, please try again",
                         "status": "failed"
                     }
-                
+
         else:
             error_message = []
             for error in new_user.errors:
                 error_message.append(error)
             response = {
-                        "message": error_message,
-                        "status": "failed"
-            }   
-    else: # not patient
-        new_user = User(name = name, password = password, email = email, ic_number = ic_number, gender = gender, guardian = None)
-        if new_user.save():  
-            user_role = UserRole(role=int(role[0]), user=new_user)     
+                "message": error_message,
+                "status": "failed"
+            }
+    else:  # not patient
+        new_user = User(name=name, password=password, email=email,ic_number=ic_number, gender=gender, guardian=None)
+        if new_user.save():
+            user_role = UserRole(role=int(role[0]), user=new_user)
             if user_role.save():
                 response = {
                     "message": f"Successfully created a user.",
@@ -127,10 +130,11 @@ def create():
             for error in new_user.errors:
                 error_message.append(error)
             response = {
-                        "message": error_message,
-                        "status": "failed"
-            }                         
+                "message": error_message,
+                "status": "failed"
+            }
     return jsonify(response)
+
 
 @users_api_blueprint.route('/edit', methods=['POST'])
 @jwt_required
@@ -139,7 +143,7 @@ def edit():
     user = User.get_or_none(User.ic_number == ic_number)
     online_user = get_jwt_identity()
     if user:
-        #change item in User table
+        # change item in User table
         user.name = request.json.get('name')
         user.password = request.json.get('password')
         user.email = request.json.get('email')
@@ -157,59 +161,56 @@ def edit():
             if user.id != online_user['id']:
                 if role:
                     roles = []
-                    role_list = UserRole.select().where(UserRole.user_id == user.id) #select all existing role(s)
+                    role_list = UserRole.select().where(UserRole.user_id == user.id)  # select all existing role(s)
                     for r in role_list:
                         roles.append(r.role_id)
-                    #Delete obselete role
+                    # Delete obselete role
                     for r in role_list:
                         if str(r.role_id) not in role:
                             del_role = UserRole.get_or_none(UserRole.role_id == r.role_id, UserRole.user_id == user.id)
                             del_role.delete_instance()
                             roles = []
-                            role_list = UserRole.select().where(UserRole.user_id == user.id) #select all existing role(s)
+                            role_list = UserRole.select().where(UserRole.user_id == user.id)  # select all existing role(s)
                             for r in role_list:
                                 roles.append(r.role_id)
-                    #Add new role
+                    # Add new role
                     for i in range(len(role)):
-                        print(int(role[i-1]))
-                        print(roles)
                         if int(role[i-1]) not in roles:
-                            new_role = UserRole(user = user, role_id = role[i-1])
+                            new_role = UserRole(user=user, role_id=role[i-1])
                             if new_role.save():
                                 roles = []
-                                role_list = UserRole.select().where(UserRole.user_id == user.id) #select all existing role(s)
+                                role_list = UserRole.select().where(UserRole.user_id == user.id)  # select all existing role(s)
                                 for r in role_list:
                                     roles.append(r.role_id)
                             else:
                                 response = {
-                                        "message": "Can't add new role, please try again",
-                                        "status": "failed"
-                                    }
+                                    "message": "Can't add new role, please try again",
+                                    "status": "failed"
+                                }
                 else:
                     role_list = UserRole.select().where(UserRole.user_id == user.id)
                     role = []
                     for r in role_list:
                         role.append(r.role_id)
                     if 1 in roles:
-                        print('bye')
                         if disease:
-                            disease_list = UserDisease.select().where(UserDisease.user_id == user.id) #select all existing disease(s)
-                            #Add new disease
+                            disease_list = UserDisease.select().where(UserDisease.user_id == user.id)  # select all existing disease(s)
+                            # Add new disease
                             for d in disease_list:
                                 if d not in disease:
                                     del_disease = UserDisease.get_or_none(UserDisease.disease_id == d.disease_id, UserDisease.user_id == user.id)
-                                    del_disease.delete_instance()                        
-                            #delete obsolete disease
+                                    del_disease.delete_instance()
+                            # delete obsolete disease
                             for i in range(len(disease)):
                                 if disease[i-1] not in disease_list:
-                                    new_disease = UserDisease(user = user, disease_id = disease[i-1])
+                                    new_disease = UserDisease(user=user, disease_id=disease[i-1])
                                     if new_disease.save():
                                         pass
                                 else:
                                     response = {
-                                            "message": "Can't add new disease, please try again",
-                                            "status": "failed"
-                                        }
+                                        "message": "Can't add new disease, please try again",
+                                        "status": "failed"
+                                    }
                         else:
                             pass
                     response = {
@@ -223,15 +224,16 @@ def edit():
                 }
         else:
             response = {
-                    "message": "Cant save user, please try again",
-                    "status": "failed"
-                }
+                "message": "Cant save user, please try again",
+                "status": "failed"
+            }
     else:
         response = {
-                    "message": "Cant save user, please try again",
-                    "status": "failed"
-                }
+            "message": "Cant save user, please try again",
+            "status": "failed"
+        }
     return jsonify(response)
+
 
 @users_api_blueprint.route('/check_ic', methods=['GET'])
 def check_ic():
@@ -249,6 +251,7 @@ def check_ic():
         }
     return jsonify(response)
 
+
 @users_api_blueprint.route('/check_email', methods=['GET'])
 def check_email():
     input = request.args.get("email")
@@ -265,17 +268,18 @@ def check_email():
         }
     return jsonify(response)
 
+
 @users_api_blueprint.route('/check_guardian', methods=['GET'])
 def check_guardian():
     input = request.args.get("guardian_id")
-    #guardian req: role = patient or guardian
+    # guardian req: role = patient or guardian
     user = User.get_or_none(User.ic_number == input)
     if user:
-        role_list = UserRole.select().where(UserRole.user_id == user.id) #select all existing role(s)
+        role_list = UserRole.select().where(UserRole.user_id == user.id)  # select all existing role(s)
         role_id_list = []
         for r in role_list:
             role_id_list.append(r.role_id)
-        if 1 in role_id_list or 2 in role_id_list :
+        if 1 in role_id_list or 2 in role_id_list:
             response = {
                 "valid": True,
                 "name": user.name
@@ -287,10 +291,11 @@ def check_guardian():
             }
     else:
         response = {
-                "valid": False,
-                "message": "User not exist"
-            }
+            "valid": False,
+            "message": "User not exist"
+        }
     return jsonify(response)
+
 
 @users_api_blueprint.route('/check_doctor', methods=['GET'])
 def check_doctor():
@@ -317,6 +322,7 @@ def check_doctor():
         }
     return jsonify(response)
 
+
 @users_api_blueprint.route('/check_patient', methods=['GET'])
 def check_patient():
     input = request.args.get("patient_ic")
@@ -342,19 +348,20 @@ def check_patient():
         }
     return jsonify(response)
 
-@users_api_blueprint.route('/show_patient', methods=['GET'])
+
+@users_api_blueprint.route('/show', methods=['GET']) #previously is show_patient, now open to all roles
 @jwt_required
-def show_patient():
+def show():
     user_ic = request.args.get("ic_number")
     user = User.get_or_none(User.ic_number == user_ic)
 
     if user:
-        role_list = Role.select().join(UserRole).where(UserRole.user_id == user.id) #select all existing role(s)
+        role_list = Role.select().join(UserRole).where(UserRole.user_id == user.id)  # select all existing role(s)
         role_name_list = []
         for r in role_list:
             role_name_list.append(r.role_name)
         if "patient" in role_name_list:
-            disease_list = Disease.select().join(UserDisease).where(UserDisease.user_id == user.id) #select all existing disease(s)
+            disease_list = Disease.select().join(UserDisease).where(UserDisease.user_id == user.id)  # select all existing disease(s)
             disease_name_list = []
             for d in disease_list:
                 disease_name_list.append(d.disease_name)
@@ -363,27 +370,28 @@ def show_patient():
             else:
                 display_guardian = None
             response = {
-                            "id": user.id,
-                            "name": user.name,
-                            "email": user.email,
-                            "ic_number": user.ic_number,
-                            "gender": user.gender,
-                            "role": role_name_list,
-                            "disease": disease_name_list,
-                            "guardian": display_guardian
-                        }
-        
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "ic_number": user.ic_number,
+                "gender": user.gender,
+                "role": role_name_list,
+                "disease": disease_name_list,
+                "guardian": display_guardian
+            }
+
         else:
             response = {
-            "message": "Patient not found",
-            "status": "failed"
-        }
+                "message": "Patient not found",
+                "status": "failed"
+            }
     else:
         response = {
             "message": "Patient not found",
             "status": "failed"
         }
     return jsonify(response)
+
 
 @users_api_blueprint.route('/show_my_patient', methods=['GET'])
 @jwt_required
@@ -401,7 +409,7 @@ def show_my_patient():
             if patient_list:
                 my_patient = []
                 for p in patient_list:
-                    disease_list = Disease.select().join(UserDisease).where(UserDisease.user_id == p.id) #select all existing disease(s)
+                    disease_list = Disease.select().join(UserDisease).where(UserDisease.user_id == p.id)  # select all existing disease(s)
                     disease_name_list = []
                     for d in disease_list:
                         disease_name_list.append(d.disease_name)
@@ -440,30 +448,29 @@ def show_my_patient():
         }
     return jsonify(response)
 
+
 @users_api_blueprint.route('/me', methods=['GET'])
 @jwt_required
 def me():
     online_user = get_jwt_identity()
     user = User.get_or_none(User.id == online_user['id'])
- 
+
     if user:
         role_list = UserRole.select().where(UserRole.user_id == user.id)
         role_id_list = []
         for r in role_list:
             role_id_list.append(r.role_id)
         response = {
-                        "id": user.id,
-                        "name": user.name,
-                        "email": user.email,
-                        "ic_number": user.ic_number,
-                        "role": role_id_list,
-                        "gender": user.gender,
-                    }
-
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "ic_number": user.ic_number,
+            "role": role_id_list,
+            "gender": user.gender,
+        }
     else:
         response = {
             "message": "User not found",
             "status": "failed"
         }
-    print(response)
     return jsonify(response)
