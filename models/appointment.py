@@ -14,15 +14,21 @@ class Appointment(BaseModel):
   zoom_url = pw.TextField(null=True)
 
   def validate(self):
-    #check if 'doctor' entered is a doctor
-    is_doctor = UserRole.get_or_none((UserRole.user_id == self.doctor) & (UserRole.role_id == 3))
-    if not is_doctor:
-      self.errors.append("IC entered does not belong to a doctor.")
-
-    #check if 'patient' entered is a patient
-    is_patient = UserRole.select().where((UserRole.user_id == self.patient) & (UserRole.role_id == 1))
-    if not is_patient:
-      self.errors.append("IC entered does not belong to a patient.")
+    #check if 'doctor' exists
+    doctor = User.get_or_none(User.id == self.doctor)
+    if doctor:
+      if "doctor" not in doctor.role: #check if 'doctor' entered is a doctor
+        self.errors.append("IC entered does not belong to a doctor.")
+    else:
+      self.errors.append("User not found")
+    
+    #check if 'patient' exists
+    patient = User.get_or_none(User.id == self.patient)
+    if patient:
+      if "patient" not in patient.role: #check if 'patient' entered is a patient
+        self.errors.append("IC entered does not belong to a patient.")
+    else:
+      self.errors.append("User not found")
     
     start = datetime.strptime(self.start_datetime, '%Y-%m-%d %H:%M:%S')
     end = datetime.strptime(self.end_datetime, '%Y-%m-%d %H:%M:%S')
