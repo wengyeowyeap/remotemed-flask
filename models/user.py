@@ -134,7 +134,7 @@ class User(BaseModel):
                                 "patient_name": a.patient.name,
                                 "patient_ic": a.patient.ic_number,
                                 "start_time": a.start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
-                                "end_time": a.end_datetime.strftime("%Y-%m-%d %H:%M:%S")
+                                "end_time": a.end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
                                 "zoom_url": link
                             })
         return past_appointment_list
