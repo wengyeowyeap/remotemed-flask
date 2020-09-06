@@ -62,6 +62,16 @@ class User(BaseModel):
         for r in role_list:
             role_name_list.append(r.role_name)
         return role_name_list #["patient", "guardian"]
+    
+    @hybrid_property    
+    def role_id(self):
+        from models.user_role import UserRole
+        from models.role import Role
+        role_list = UserRole.select().where(UserRole.user == self)
+        role_id_list = []
+        for r in role_list:
+            role_id_list.append(str(r.role_id))
+        return role_id_list #["1", "2"]
 
     @hybrid_property 
     def disease(self):
@@ -72,6 +82,16 @@ class User(BaseModel):
         for d in disease_list:
             disease_name_list.append(d.disease_name)
         return disease_name_list #["diabetes", "hypertension"]
+    
+    @hybrid_property 
+    def disease_id(self):
+        from models.user_disease import UserDisease
+        from models.disease import Disease
+        disease_list = UserDisease.select().where(UserDisease.user == self)
+        disease_id_list = []
+        for d in disease_list:
+            disease_id_list.append(str(d.disease_id))
+        return disease_id_list #["1", "2"]
 
     @hybrid_property 
     def upcoming_appointment(self):
@@ -147,3 +167,13 @@ class User(BaseModel):
         for p in patient:
             patient_list.append(p.id)
         return patient_list #Using the id, can get other things through above methods
+    
+    def error(self):
+        error_message = []
+        for error in self.errors:
+            error_message.append(error)
+        response = {
+            "message": error_message,
+            "status": "fail"
+        }
+        return response
