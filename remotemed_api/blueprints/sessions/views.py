@@ -27,6 +27,22 @@ def login():
                 else:
                     guardian = None
 
+                patient_list = []
+                if user.my_patient:
+                    patient_list = user.my_patient
+                    my_patient = []
+                    for i in range(len(patient_list)):
+                        p = User.get_or_none(User.id == patient_list[i])
+                        my_patient.append(
+                            {
+                                "id": p.id,
+                                "name": p.name,
+                                "email": p.email,
+                                "ic_number": p.ic_number,
+                                "gender": p.gender,
+                                "disease": p.disease,
+                            }
+                        )
                 identity = {
                     "id": user.id,
                     "name": user.name,
@@ -52,6 +68,7 @@ def login():
                         "role": user.role, #hybrid property
                         "disease": user.disease, #hybrid property
                         "guardian": guardian
+                        "patient_list": patient_list
                     }
                 })
         else:

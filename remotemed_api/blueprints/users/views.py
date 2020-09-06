@@ -313,46 +313,6 @@ def show():
         }
     return jsonify(response)
 
-
-@users_api_blueprint.route('/show_my_patient', methods=['GET'])
-@jwt_required
-def show_my_patient():
-    online_user = get_jwt_identity()
-    guardian = User.get_or_none(User.id == online_user['id'])
-
-    if guardian:
-        patient_list = guardian.my_patient
-        if patient_list:
-            my_patient = []
-            for i in range(len(patient_list)):
-                p = User.get_or_none(User.id == patient_list[i])
-                my_patient.append(
-                    {
-                        "id": p.id,
-                        "name": p.name,
-                        "email": p.email,
-                        "ic_number": p.ic_number,
-                        "gender": p.gender,
-                        "disease": p.disease,
-                    }
-                )
-            response = {
-                "status": "success",
-                "my_patient": my_patient
-            }
-        else:
-            response = {
-                "message": "This guardian has no patient",
-                "status": "fail"
-            }
-    else:
-        response = {
-            "message": "User not exist",
-            "status": "fail"
-        }
-    return jsonify(response)
-
-
 @users_api_blueprint.route('/me', methods=['GET'])
 @jwt_required
 def me():
@@ -372,6 +332,22 @@ def me():
             response['guardian'] = user.guardian.name                        
         else:
             response['guardian'] = None
+        if user.my_patient:
+            patient_list = user.my_patient
+            my_patient = []
+            for i in range(len(patient_list)):
+                p = User.get_or_none(User.id == patient_list[i])
+                my_patient.append(
+                    {
+                        "id": p.id,
+                        "name": p.name,
+                        "email": p.email,
+                        "ic_number": p.ic_number,
+                        "gender": p.gender,
+                        "disease": p.disease,
+                    }
+                )
+            response['my_patient'] = my_patient
     else:
         response = {
             "message": "User not found",
