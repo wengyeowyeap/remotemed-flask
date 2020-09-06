@@ -95,3 +95,13 @@ class Appointment(BaseModel):
     }
 
     return result
+    
+    def error(self):
+      error_message = []
+      for error in self.errors:
+          error_message.append(error)
+      response = {
+          "message": error_message,
+          "status": "fail"
+      }
+      return response
