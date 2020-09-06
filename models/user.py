@@ -100,6 +100,10 @@ class User(BaseModel):
         upcoming_appointment_list = []
         for a in upcoming_appointment:
             if a.end_datetime > datetime.now():
+                if a.zoom_url:
+                    link = a.zoom_url
+                else:
+                    link = None
                 upcoming_appointment_list.append({
                                 "appointment_id": a.id,
                                 "doctor_name": a.doctor.name,
@@ -107,7 +111,8 @@ class User(BaseModel):
                                 "patient_name": a.patient.name,
                                 "patient_ic": a.patient.ic_number,
                                 "start_time": a.start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
-                                "end_time": a.end_datetime.strftime("%Y-%m-%d %H:%M:%S")
+                                "end_time": a.end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                                "zoom_url": link
                             })
         return upcoming_appointment_list
 
@@ -118,6 +123,10 @@ class User(BaseModel):
         past_appointment_list = []
         for a in past_appointment:
             if a.end_datetime < datetime.now():
+                if a.zoom_url:
+                    link = a.zoom_url
+                else:
+                    link = None
                 past_appointment_list.append({
                                 "appointment_id": a.id,
                                 "doctor_name": a.doctor.name,
@@ -126,6 +135,7 @@ class User(BaseModel):
                                 "patient_ic": a.patient.ic_number,
                                 "start_time": a.start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
                                 "end_time": a.end_datetime.strftime("%Y-%m-%d %H:%M:%S")
+                                "zoom_url": link
                             })
         return past_appointment_list
 

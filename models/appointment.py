@@ -11,6 +11,7 @@ class Appointment(BaseModel):
   patient = pw.ForeignKeyField(User, null=False)
   start_datetime = pw.DateTimeField(null=False)
   end_datetime = pw.DateTimeField(null=False)
+  zoom_url = pw.TextField(null=True)
 
   def validate(self):
     #check if 'doctor' entered is a doctor
