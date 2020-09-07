@@ -307,20 +307,20 @@ def show():
         else:
             response['guardian'] = None
         if user.my_patient:
-        patient_list = user.my_patient
-        my_patient = []
-        for i in range(len(patient_list)):
-            p = User.get_or_none(User.id == patient_list[i])
-            my_patient.append(
-                {
-                    "id": p.id,
-                    "name": p.name,
-                    "email": p.email,
-                    "ic_number": p.ic_number,
-                    "gender": p.gender,
-                    "disease": p.disease,
-                }
-            )
+            patient_list = user.my_patient
+            my_patient = []
+            for i in range(len(patient_list)):
+                p = User.get_or_none(User.id == patient_list[i])
+                my_patient.append(
+                    {
+                        "id": p.id,
+                        "name": p.name,
+                        "email": p.email,
+                        "ic_number": p.ic_number,
+                        "gender": p.gender,
+                        "disease": p.disease,
+                    }
+                )
         response['my_patient'] = my_patient
     else:
         response = {

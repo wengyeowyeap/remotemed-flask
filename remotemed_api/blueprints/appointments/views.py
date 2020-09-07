@@ -78,7 +78,7 @@ def edit():
                 "doctor_ic": appointment.doctor.ic_number,
                 "start_datetime": appointment.start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
                 "end_datetime": appointment.end_datetime.strftime("%Y-%m-%d %H:%M:%S")
-            })
+            }
         else:
             response = appointment.error()
     else:
@@ -108,7 +108,7 @@ def me():
                     }
                 )
             response = {
-                "status": "success"
+                "status": "success",
                 "my_appointment": {
                     "upcoming": user.upcoming_appointment,
                     "past": user.past_appointment
@@ -141,7 +141,7 @@ def me():
         elif ("doctor" in user.role) or ("patient" in user.role):
             if user.upcoming_appointment or user.past_appointment:
                 response = {
-                    "status": "success"
+                    "status": "success",
                     "upcoming": user.upcoming_appointment,
                     "past": user.past_appointment
                 }
@@ -182,7 +182,7 @@ def show():
                     }
                 )
             response = {
-                "status": "success"
+                "status": "success",
                 "my_appointment": {
                     "upcoming": user.upcoming_appointment,
                     "past": user.past_appointment
@@ -215,7 +215,7 @@ def show():
         elif ("doctor" in user.role) or ("patient" in user.role):
             if user.upcoming_appointment or user.past_appointment:
                 response = {
-                    "status": "success"
+                    "status": "success",
                     "upcoming": user.upcoming_appointment,
                     "past": user.past_appointment
                 }

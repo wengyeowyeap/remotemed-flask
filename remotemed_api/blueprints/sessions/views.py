@@ -67,7 +67,7 @@ def login():
                         "gender": user.gender,
                         "role": user.role, #hybrid property
                         "disease": user.disease, #hybrid property
-                        "guardian": guardian
+                        "guardian": guardian,
                         "patient_list": patient_list
                     }
                 })
