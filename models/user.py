@@ -147,10 +147,6 @@ class User(BaseModel):
         record = Record.select().join(Appointment).where((Appointment.doctor == self) | (Appointment.patient == self))
         record_list = []
         for r in record:
-            photo_list = []
-            photo = Patient_Photo.select().where(Patient_Photo.record == r)
-            for p in photo:
-                photo_list.append(p.full_image_url)
             record_list.append({
                             "record_id": r.id,
                             "appointment_id": r.appointment_id,
@@ -166,7 +162,7 @@ class User(BaseModel):
                             "doctor_ic": r.appointment.doctor.ic_number,
                             "patient_name": r.appointment.patient.name,
                             "patient_ic": r.appointment.patient.ic_number,
-                            "record_photo": photo_list
+                            "record_photo": r.photo
                         })
         return record_list
 
