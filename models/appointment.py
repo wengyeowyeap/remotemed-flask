@@ -40,6 +40,8 @@ class Appointment(BaseModel):
       self.errors.append("The start time is later than end time.")
     if start.day != end.day:
       self.errors.append("Appointments must be completed within the same day.")
+    if not (start > datetime.now() and end > datetime.now()):
+      self.errors.append("Appointments must be in the future.")
 
       # CREATE Appointment Validation Pseudocode
       #1. search for all records containing self.doctor, self.patient (if no record, then create appointment)
