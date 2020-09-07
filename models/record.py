@@ -1,6 +1,7 @@
 from models.base_model import BaseModel
 import peewee as pw
 from models.appointment import Appointment
+from playhouse.hybrid import hybrid_property
 
 class Record(BaseModel):
   appointment = pw.ForeignKeyField(Appointment, unique=True, backref="appointment")
@@ -21,3 +22,12 @@ class Record(BaseModel):
       self.payment_amount =  round(self.payment_amount, 2) #round to 2 decimal places before saving
     else:
       self.errors.append('No payment is inputted.')
+
+  @hybrid_property
+  def photo(self):
+    from patient_photo import Patient_Photo
+    photo_list = []
+    photo = Patient_Photo.select().where(Patient_Photo.record == self)
+    for p in photo:
+        photo_list.append(p.full_image_url)
+    return photo_list
