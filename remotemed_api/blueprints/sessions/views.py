@@ -74,10 +74,10 @@ def login():
         else:
             return jsonify({
                 "message": "Wrong Password, Please try again.",
-                "status": "failed"
+                "status": "fail"
             })
     else:
         return jsonify({
             "message": "No such user exists.",
-            "status": "failed"
+            "status": "fail"
         })

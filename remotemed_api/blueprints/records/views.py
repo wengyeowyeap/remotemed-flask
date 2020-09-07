@@ -43,7 +43,7 @@ def create():
         else:
             return jsonify({
                 "message": "Add record failed, please try again",
-                "status": "failed"
+                "status": "fail"
             })
             # Image Upload Start
         images = []
@@ -55,7 +55,7 @@ def create():
                 patient_record.delete_instance()
                 return jsonify({
                     "message": "One or more of the uploaded files is not an image. Please try again",
-                    "status": "failed"
+                    "status": "fail"
                 })
             else:
                 file_extension = image.mimetype
@@ -74,13 +74,13 @@ def create():
                     patient_record.delete_instance()
                     return jsonify({
                         "message": "Image upload failed, please try again",
-                        "status": "failed"
+                        "status": "fail"
                     })
         response["images"] = images
     else:
         response = {
             "message": "User not found/ Only patient is allowed to create record.",
-            "status": "failed"
+            "status": "fail"
         }
     return jsonify(response)
 
@@ -130,12 +130,12 @@ def show():
         else:
             response = {
                 "message": "Admin has no record.",
-                "status": "failed"
+                "status": "fail"
             }
     else:
         response = {
             "message": "User not found",
-            "status": "failed"
+            "status": "fail"
         }
     return jsonify(response)
 
@@ -185,12 +185,12 @@ def me():
         else:
             response = {
                 "message": "Admin has no record.",
-                "status": "failed"
+                "status": "fail"
             }
     else:
         response = {
             "message": "User not found",
-            "status": "failed"
+            "status": "fail"
         }
     return jsonify(response)
 
@@ -222,7 +222,7 @@ def search():
     else:
         return jsonify({
             "message": "There is no such record.",
-            "status": "failed"
+            "status": "fail"
         })
 
 
@@ -248,12 +248,12 @@ def edit():
                 else:
                     response = {
                         "message": "Record not saved",
-                        "status": "failed"
+                        "status": "fail"
                     }
             else:
                 response = {
                     "message": "Record not found",
-                    "status": "failed"
+                    "status": "fail"
                 }
         elif ("admin" in user.role):
             update_record = Record.get_or_none(Record.id == request.json.get("record_id"))
@@ -268,21 +268,21 @@ def edit():
                 else:
                     response = {
                         "message": "Record not saved",
-                        "status": "failed"
+                        "status": "fail"
                     }
             else:
                 response = {
                     "message": "Record not found",
-                    "status": "failed"
+                    "status": "fail"
                 }
         else:
             response = {
                 "message": "User has no permission to this page",
-                "status": "failed"
+                "status": "fail"
             }
     else:
         response = {
             "message": "User does not exist",
-            "status": "failed"
+            "status": "fail"
         }
     return jsonify(response)

@@ -13,6 +13,7 @@ users_api_blueprint = Blueprint('users_api',
 
 
 @users_api_blueprint.route('/create', methods=['POST'])
+@jwt_required
 def create():
     name = request.json.get('name')
     password = request.json.get('password')
@@ -21,6 +22,15 @@ def create():
     gender = request.json.get('gender')
     role = request.json.get('role')
     disease = request.json.get('disease')
+
+    online_user = get_jwt_identity()
+    user = User.get_or_none(User.id == online_user['id'])
+
+    if "admin" not in user.role:
+        return jsonify({
+            "message": "401 Unauthorized (Only admin is allowed)",
+            "status": "Fail"
+        })
 
     if (("1" in role) or ("2" in role)) and (("3" in role) or ("4" in role)):
         response = {
@@ -321,7 +331,7 @@ def show():
                         "disease": p.disease,
                     }
                 )
-        response['my_patient'] = my_patient
+            response['my_patient'] = my_patient
     else:
         response = {
             "message": "User not found",

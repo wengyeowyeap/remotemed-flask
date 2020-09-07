@@ -275,12 +275,12 @@ def destroy():
         else:
             return jsonify({
                 "message": "Couldn't delete appointment.",
-                "status": "failed"
+                "status": "fail"
             })
     else:
         return jsonify({
             "message": "No such appointment exists.",
-            "status": "failed"
+            "status": "fail"
         })
 
 
