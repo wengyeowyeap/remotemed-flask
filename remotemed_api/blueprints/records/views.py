@@ -20,6 +20,15 @@ records_api_blueprint = Blueprint('records_api',
 @jwt_required
 def create():
     appointment_id = request.form.get("appointment_id")
+    a = Appointment.get_or_none(Appointment.id == appointment_id)
+    if a.record:
+        return jsonify({
+            "message": "This appointment already has an existing record.",
+            "status": "fail"
+        })
+    else:
+        pass
+    
     cholestrol_level = request.form.get("cholestrol_level")
     sugar_level = request.form.get("sugar_level")
     systolic_blood_pressure = request.form.get("systolic_blood_pressure")
@@ -107,13 +116,13 @@ def show():
                 "guardian's record": user.record,
                 "my_patient_record": my_patient_record
             }
-        elif ("patient" in role_name_list) or ("doctor" in role_name_list):
+        elif ("patient" in user.role) or ("doctor" in user.role):
             response = {
                 "record": user.record,
                 "message": "successfully retrieve record!",
                 "status": "success"
             }
-        elif "guardian" in role_name_list:
+        elif "guardian" in user.role:
             # my patient's record
             patient_list = user.my_patient
             my_patient_record = []            
