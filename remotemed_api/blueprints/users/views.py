@@ -90,10 +90,6 @@ def create():
                     #handle role for patient
                     user_role = UserRole(role=role[0], user=new_user)
                     if user_role.save():
-                        disease_name_list = []
-                        disease_list = Disease.select().join(UserDisease).where(UserDisease.user_id == new_user.id)
-                        for d in disease_list:
-                            disease_name_list.append(d.disease_name)
                         response = {
                             "message": f"Successfully created a user.",
                             "status": "success",
