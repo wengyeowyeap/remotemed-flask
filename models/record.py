@@ -25,7 +25,7 @@ class Record(BaseModel):
 
   @hybrid_property
   def photo(self):
-    from patient_photo import Patient_Photo
+    from models.patient_photo import Patient_Photo
     photo_list = []
     photo = Patient_Photo.select().where(Patient_Photo.record == self)
     for p in photo:
