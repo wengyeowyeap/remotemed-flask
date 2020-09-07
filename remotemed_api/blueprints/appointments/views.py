@@ -302,16 +302,22 @@ def destroy():
     id = request.json.get("appointment_id")
     appointment = Appointment.get_or_none(Appointment.id == id)
     if appointment:
-        if appointment.delete_instance():
+        if appointment.record:
             return jsonify({
-                "message": "Successfully deleted appointment.",
-                "status": "success"
-            })
-        else:
-            return jsonify({
-                "message": "Couldn't delete appointment.",
+                "message": "An appointment with record is not deleteable.",
                 "status": "fail"
             })
+        else:
+            if appointment.delete_instance():
+                return jsonify({
+                    "message": "Successfully deleted appointment.",
+                    "status": "success"
+                })
+            else:
+                return jsonify({
+                    "message": "Couldn't delete appointment.",
+                    "status": "fail"
+                })
     else:
         return jsonify({
             "message": "No such appointment exists.",

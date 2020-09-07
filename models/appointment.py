@@ -81,23 +81,26 @@ class Appointment(BaseModel):
     from models.record import Record
     from models.patient_photo import Patient_Photo
     r = Record.get_or_none(Record.appointment_id == self.id)
-    result = {
-      "record_id": r.id,
-      "appointment_id": r.appointment_id,
-      "report": r.report,
-      "prescription": r.prescription,
-      "payment_amount": str(r.payment_amount),
-      "paid": r.paid,
-      "cholestrol_level": str(float(r.cholestrol_level)),
-      "sugar_level": str(float(r.sugar_level)),
-      "systolic_blood_pressure": str(float(r.systolic_blood_pressure)),
-      "diastolic_blood_pressure": str(float(r.diastolic_blood_pressure)),
-      "doctor_name": r.appointment.doctor.name,
-      "doctor_ic": r.appointment.doctor.ic_number,
-      "patient_name": r.appointment.patient.name,
-      "patient_ic": r.appointment.patient.ic_number,
-      "record_photo": r.photo
-    }
+    if r:    
+      result = {
+        "record_id": r.id,
+        "appointment_id": r.appointment_id,
+        "report": r.report,
+        "prescription": r.prescription,
+        "payment_amount": str(r.payment_amount),
+        "paid": r.paid,
+        "cholestrol_level": str(float(r.cholestrol_level)),
+        "sugar_level": str(float(r.sugar_level)),
+        "systolic_blood_pressure": str(float(r.systolic_blood_pressure)),
+        "diastolic_blood_pressure": str(float(r.diastolic_blood_pressure)),
+        "doctor_name": r.appointment.doctor.name,
+        "doctor_ic": r.appointment.doctor.ic_number,
+        "patient_name": r.appointment.patient.name,
+        "patient_ic": r.appointment.patient.ic_number,
+        "record_photo": r.photo
+      }
+    else:
+      result = None
 
     return result
 

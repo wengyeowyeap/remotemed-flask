@@ -242,9 +242,9 @@ def edit():
     user = User.get_or_none(User.id == online_user['id'])
 
     if user:
-        if ("doctor" in user.role):
-            update_record = Record.get_or_none(Record.id == request.json.get("record_id"))
-            if update_record:
+        update_record = Record.get_or_none(Record.id == request.json.get("record_id"))
+        if update_record:
+            if (user == update_record.appointment.doctor):     
                 update_record.report = request.json.get("report")
                 update_record.prescription = request.json.get("prescription")
                 if update_record.save():
@@ -259,14 +259,7 @@ def edit():
                         "message": "Record not saved",
                         "status": "fail"
                     }
-            else:
-                response = {
-                    "message": "Record not found",
-                    "status": "fail"
-                }
-        elif ("admin" in user.role):
-            update_record = Record.get_or_none(Record.id == request.json.get("record_id"))
-            if update_record:
+            elif ("admin" in user.role):
                 update_record.payment_amount = request.json.get("payment_amount")
                 if update_record.save():
                     response = {
@@ -281,12 +274,12 @@ def edit():
                     }
             else:
                 response = {
-                    "message": "Record not found",
+                    "message": "401 Unauthorized (Only the doctor or admin is allowed.)",
                     "status": "fail"
                 }
         else:
             response = {
-                "message": "User has no permission to this page",
+                "message": "Record not found",
                 "status": "fail"
             }
     else:
