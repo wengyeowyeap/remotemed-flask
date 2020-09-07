@@ -79,10 +79,6 @@ class Appointment(BaseModel):
     from models.record import Record
     from models.patient_photo import Patient_Photo
     r = Record.get_or_none(Record.appointment_id == self.id)
-    photo_list = []
-    photo = Patient_Photo.select().where(Patient_Photo.record == r)
-    for p in photo:
-        photo_list.append(p.full_image_url)
     result = {
       "record_id": r.id,
       "appointment_id": r.appointment_id,
@@ -98,7 +94,7 @@ class Appointment(BaseModel):
       "doctor_ic": r.appointment.doctor.ic_number,
       "patient_name": r.appointment.patient.name,
       "patient_ic": r.appointment.patient.ic_number,
-      "record_photo": photo_list
+      "record_photo": r.photo
     }
 
     return result
